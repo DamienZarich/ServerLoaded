@@ -7,9 +7,20 @@
 </head>
 <body>
  <div class="cards">
-    <div class="status-card"></div>
-    <div class="command-card"></div>
-    <div class="management-card"></div>
+    <div class="status-card">
+        <h3>Server Status</h3>
+        <div id="status-Indicator"></div>
+        <p>Online: <span id="player-count">0/10</span></p>
+    </div>
+    <div class="command-card">
+        <button onclick="sendCommand('start')">Initialize Server</button>
+        <button onclick="sendCommand('stop')">Stop Server</button>
+    </div>
+    <div class="management-card">
+        <h3>Utilites</h3>
+        <input type="text" id="whitelist-input" placeholder="Player">
+        <button onclick="addToWhiteList()">Add To WhiteList</button>
+    </div>
  </div>   
 </body>
 </html>
