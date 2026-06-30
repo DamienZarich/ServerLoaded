@@ -22,7 +22,6 @@ body {
     gap: 15px;
     align-items: center;
 }
-
 .card button {
     width: 100%;
     padding: 15px;
@@ -51,4 +50,25 @@ h3 {
     letter-spacing: 1px;
     font-weight: 400;
     margin-bottom: 20px;
+}
+#status-Indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #4A5568;
+    display: inline-block;
+    margin-right: 8px;
+}
+.status-online { background-color: #48BB78; }
+.status-offline { background-color: #F56565; }
+@media (max-width: 1200px) {
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
 }

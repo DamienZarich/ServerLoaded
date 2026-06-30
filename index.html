@@ -23,6 +23,15 @@
         <input class="type" type="text" id="whitelist-input" placeholder="Player">
         <button class="add-button" onclick="addToWhiteList()">Add To WhiteList</button>
     </div>
+    <div class="card log-card">
+    <h3>System Logs</h3>
+    <div id="log-window" style="font-family: monospace; font-size: 12px; color: #A0AEC0; height: 100%; overflow-y: auto;">
+        > System initialized...
+    </div>
+    <button class="start-button" onclick="sendCommand('start', event)">Initialize Server</button>
+<button class="stop-button" onclick="sendCommand('stop', event)">Stop Server</button>
+</div>
  </div>   
+ <script src="script.js" defer></script>
 </body>
 </html>
