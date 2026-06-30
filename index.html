@@ -4,19 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Loaded</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
  <div class="cards">
-    <div class="status-card">
+    <div class="card status-card">
         <h3>Server Status</h3>
         <div id="status-Indicator"></div>
         <p>Online: <span id="player-count">0/10</span></p>
     </div>
-    <div class="command-card">
-        <button onclick="sendCommand('start')">Initialize Server</button>
-        <button onclick="sendCommand('stop')">Stop Server</button>
+    <div class="card command-card">
+        <button class="servers" onclick="sendCommand('start')">Initialize Server</button>
+        <button class="servers" onclick="sendCommand('stop')">Stop Server</button>
     </div>
-    <div class="management-card">
+    <div class="card management-card">
         <h3>Utilites</h3>
         <input type="text" id="whitelist-input" placeholder="Player">
         <button onclick="addToWhiteList()">Add To WhiteList</button>
