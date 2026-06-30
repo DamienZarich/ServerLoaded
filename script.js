@@ -28,3 +28,12 @@ function sendCommand(cmd) {
         }
     }, 1500);
 }
+function logEvent(message) {
+    const logWindow = document.getElementById('log-window');
+    logWindow.innerHTML += `<br>> ${message}`;
+    logWindow.scrollTop = logWindow.scrollHeight;
+}
+setInterval(() => {
+    const isOnline = Math.random() > 0.5;
+    updateStatus(isOnline);
+}, 5000);
