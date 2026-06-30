@@ -14,13 +14,14 @@
         <p>Online: <span id="player-count">0/10</span></p>
     </div>
     <div class="card command-card">
-        <button class="servers" onclick="sendCommand('start')">Initialize Server</button>
-        <button class="servers" onclick="sendCommand('stop')">Stop Server</button>
+        <h3>Command</h3>
+        <button class="start-button" onclick="sendCommand('start')">Initialize Server</button>
+        <button class="stop-button" onclick="sendCommand('stop')">Stop Server</button>
     </div>
     <div class="card management-card">
         <h3>Utilites</h3>
-        <input type="text" id="whitelist-input" placeholder="Player">
-        <button onclick="addToWhiteList()">Add To WhiteList</button>
+        <input class="type" type="text" id="whitelist-input" placeholder="Player">
+        <button class="add-button" onclick="addToWhiteList()">Add To WhiteList</button>
     </div>
  </div>   
 </body>
