@@ -59,8 +59,10 @@ h3 {
     display: inline-block;
     margin-right: 8px;
 }
-.status-online { background-color: #48BB78; }
-.status-offline { background-color: #F56565; }
+.status-online { background-color: #48BB78; 
+}
+.status-offline { background-color: #F56565; 
+}
 @media (max-width: 1200px) {
     .cards {
         display: grid;
@@ -71,4 +73,29 @@ h3 {
     .cards {
         grid-template-columns: 1fr;
     }
+}
+.telemetry-card { 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+}
+.telemetry-group { 
+    width: 100%;
+}
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #121214;
+    border: 1px solid #2D3748; 
+    margin-top: 5px;
+}
+.fill {
+    height: 100%;
+    background: #4A5568;
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+.high-load {background-color: #E53E3E; 
+}
+.med-load {background-color: #DD6B20; 
 }
