@@ -1,0 +1,25 @@
+{
+  "name": "serverloaded",
+  "version": "1.0.0",
+  "description": "A clean, responsive dashboard designed to provide real-time status and control for my private game server.\r This tool removes the need to manually check console windows by providing a simplified interface for server management.\r Preview",
+  "homepage": "https://github.com/DamienZarich/ServerLoaded#readme",
+  "bugs": {
+    "url": "https://github.com/DamienZarich/ServerLoaded/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DamienZarich/ServerLoaded.git"
+  },
+  "license": "ISC",
+  "author": "damien",
+  "type": "commonjs",
+  "main": "main.js",
+"scripts": {
+  "start": "electron .",
+  "test": "echo \"Error: no test specified\" && exit 1"
+},
+  "devDependencies": {
+    "electron": "^43.0.0"
+  }
+
+}
