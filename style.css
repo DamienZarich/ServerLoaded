@@ -90,12 +90,24 @@ h3 {
     border: 1px solid #2D3748; 
     margin-top: 5px;
 }
-.fill {
+.front-bar, .back-bar {
+    position: absolute;
     height: 100%;
-    background: #4A5568;
-    transition: width 0.5s ease, background-color 0.5s ease;
+    transition: ease 0.5s;
 }
-.high-load {background-color: #E53E3E; 
+.front-bar {
+width: 0;
+z-index: 3;
+background: #1e242e;
 }
-.med-load {background-color: #DD6B20; 
+.back-bar {
+width: 0;
+z-index: 2;
+background: rgb(31, 96, 201);
+}
+.high-load {
+    background: #df0b0b;
+}
+.med-load {
+    background: rgb(228, 228, 27);
 }
