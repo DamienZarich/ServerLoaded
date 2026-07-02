@@ -89,6 +89,8 @@ h3 {
     background: #121214;
     border: 1px solid #2D3748; 
     margin-top: 5px;
+    position: relative;
+    overflow: hidden;
 }
 .front-bar, .back-bar {
     position: absolute;
@@ -98,16 +100,23 @@ h3 {
 .front-bar {
 width: 0;
 z-index: 3;
-background: #1e242e;
+background: rgb(31, 96, 201);
 }
 .back-bar {
 width: 0;
 z-index: 2;
-background: rgb(31, 96, 201);
+background: #1e242e;
 }
 .high-load {
     background: #df0b0b;
 }
 .med-load {
     background: rgb(228, 228, 27);
+}
+.keys {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
 }
