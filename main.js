@@ -1,9 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const fs = require('fs');
-const { sign } = require('crypto');
+const si = require('systeminformation');
 
-let mainWindow
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -15,11 +13,12 @@ function createWindow() {
     }
   });
   ipcMain.handle('get-stats', async () => {
-      const cpu = await sign.currentLoad ();
-      const mem = await sign.mem ();
+      const cpu = await si.currentLoad ();
+      const mem = await si.mem ();
 
       return {
-        
+        cpu: Math.round(cpu.currentLoad) +"%",
+        memory: Math.round((mem.active / mem.total) * 100) +"%"
       }
     });
 
