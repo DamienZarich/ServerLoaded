@@ -33,7 +33,7 @@ function logEvent(message) {
     logWindow.innerHTML += `<br>> ${message}`;
     logWindow.scrollTop = logWindow.scrollHeight;
 }
-setInterval(() => {
-    const isOnline = Math.random() > 0.5;
-    updateStatus(isOnline);
+setInterval( async () => {
+    const stats = await window.electronAPI.getStats();
+    console.log("current stats:", stats);
 }, 5000);
