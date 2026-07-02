@@ -79,9 +79,12 @@ h3 {
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
+    position: relative;
+    padding-bottom: 100px;
 }
 .telemetry-group { 
     width: 100%;
+position: relative;
 }
 .progress-bar {
     width: 100%;
@@ -114,9 +117,32 @@ background: #1e242e;
     background: rgb(228, 228, 27);
 }
 .keys {
-    width: 20px;
-    height: 20px;
     position: absolute;
     bottom: 20px;
     left: 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    z-index: 10;
+    gap: 30px;
+}
+.red, .yellow, .blue {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    gap: 20px;
+}
+.color-box {
+    width: 25px;
+    height: 25px;
+    border: 2px solid rgb(116, 115, 115);
+}
+.color-box.red{
+    background: #df0b0b;
+}
+.color-box.yellow {
+    background:  rgb(228, 228, 27);
+}
+.color-box.blue {
+    background: rgb(31, 96, 201);
 }
