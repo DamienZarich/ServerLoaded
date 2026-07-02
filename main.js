@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
+const { sign } = require('crypto');
 
 let mainWindow
 function createWindow() {
@@ -13,6 +14,14 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+  ipcMain.handle('get-stats', async () => {
+      const cpu = await sign.currentLoad ();
+      const mem = await sign.mem ();
+
+      return {
+        
+      }
+    });
 
   win.loadFile('index.html');
 }
