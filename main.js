@@ -16,5 +16,7 @@ function createWindow() {
 
   win.loadFile('index.html');
 }
-
+ipcMain.handle('get-stats', async () => {
+  return {cpu: "10%", memory: "50%"}
+});
 app.whenReady().then(createWindow);
