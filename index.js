@@ -42,4 +42,9 @@ setInterval(async () => {
     const stats = await window.electronAPI.getStats();
     const cpuBar = document.getElementById('cpu-bar');
     const membar = document.getElementById('mem-bar');
-}, interval);
+
+    if (cpuBar && membar) {
+        cpuBar.style.width = stats.cpu
+        membar.style.width = stats.memory
+    }
+}, 2000);
