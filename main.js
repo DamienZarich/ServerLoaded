@@ -12,6 +12,8 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+  win.loadFile('index.html')
+}
   ipcMain.handle('get-stats', async () => {
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();
@@ -21,10 +23,4 @@ function createWindow() {
         memory: Math.round((mem.active / mem.total) * 100) +"%"
       }
     });
-
-  win.loadFile('index.html');
-}
-ipcMain.handle('get-stats', async () => {
-  return {cpu: "10%", memory: "50%"}
-});
 app.whenReady().then(createWindow);

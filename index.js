@@ -37,3 +37,9 @@ setInterval( async () => {
     const stats = await window.electronAPI.getStats();
     console.log("current stats:", stats);
 }, 5000);
+
+setInterval(async () => {
+    const stats = await window.electronAPI.getStats();
+    const cpuBar = document.getElementById('cpu-bar');
+    const membar = document.getElementById('mem-bar');
+}, interval);
