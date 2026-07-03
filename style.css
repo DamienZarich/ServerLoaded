@@ -3,6 +3,13 @@ body {
     color: #E2E8F0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+h1, h2, h3 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
 .cards {
     display: flex;
     flex-wrap: wrap;
@@ -45,12 +52,6 @@ body {
     display: block;
     margin: 10px 0;
 }
-h3 {
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 400;
-    margin-bottom: 20px;
-}
 #status-Indicator {
     width: 12px;
     height: 12px;
@@ -81,10 +82,13 @@ h3 {
     gap: 20px; 
     position: relative;
     padding-bottom: 100px;
+    align-items: flex-start;
 }
 .telemetry-group { 
     width: 100%;
-position: relative;
+    position: relative;
+    flex: 1 1 100%;
+    max-width: 100%;
 }
 .progress-bar {
     width: 100%;
@@ -145,4 +149,10 @@ background: #1e242e;
 }
 .color-box.blue {
     background: rgb(31, 96, 201);
+}
+h1 {
+    font-size: 20px; 
+}
+h3 { 
+    font-size: 18px; 
 }
