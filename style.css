@@ -156,3 +156,20 @@ h1 {
 h3 { 
     font-size: 18px; 
 }
+.quick-file button:first-of-type {
+    margin-bottom: 15px;
+}
+.quick-file small {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    display: block;
+}
+.File {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+.ping-card {
+    text-transform: uppercase;
+}

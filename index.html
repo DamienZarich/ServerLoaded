@@ -31,9 +31,18 @@
 </div>
  <div class="card ping-card">
         <h1>Ping</h1>
+        <p>Server Latency <span id="ping">:ms</span></p>
     </div>
     <div class="card quick-file">
-        <h1>Server Files</h1>
+        <h1>Files<h1></h1>
+        <div class="File">
+        <button>Config Files</button>
+        <small style="color: #718096; font-size: 11px;">Edit server-properties</small>
+        </div>
+        <div class="File">
+        <button>Server Files</button>
+        <small style="color: #718096; font-size: 11px;">Open root directory</small>
+        </div>
     </div>
 <div class="card telemetry-card" style="width: 100%;">
     <h3>SYSTEM TELEMETRY</h3>
@@ -62,7 +71,7 @@
                 <div class="color-box blue"></div> <span>Server Load</span>
             </div>
         </div>
-</div>
+    </div>
 </div>   
  <script src="index.js" defer></script>
 </body>
