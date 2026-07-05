@@ -99,17 +99,17 @@ h1, h2, h3 {
     position: relative;
     overflow: hidden;
 }
-.front-bar, .back-bar {
+.back-bar-cpu, .back-bar-mem {
     position: absolute;
     height: 100%;
     transition: ease 0.5s;
 }
-.front-bar {
+.back-bar-cpu {
 width: 0;
-z-index: 3;
-background: rgb(31, 96, 201);
+z-index: 2;
+background: #1e242e;
 }
-.back-bar {
+.back-bar-mem {
 width: 0;
 z-index: 2;
 background: #1e242e;
@@ -172,4 +172,10 @@ h3 {
 }
 .ping-card {
     text-transform: uppercase;
+}
+.med-latency {
+    background: rgb(228, 228, 27);
+}
+.high-latency {
+    background: #df0b0b;
 }

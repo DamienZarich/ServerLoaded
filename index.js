@@ -35,14 +35,18 @@ setInterval( async () => {
 
 setInterval(async () => {
     const stats = await window.electronAPI.getStats();
-    const cpuBar = document.getElementById('cpu-bar');
-    const membar = document.getElementById('mem-bar');
+    const cpuBar = document.querySelector('.back-bar-cpu');
+    const membar = document.querySelector('.back-bar-mem');
+    const cpuDis = document.getElementById('cpu-value');
+    const memDis = document.getElementById('mem-value');
 
-    if (cpuBar && membar) {
-        cpuBar.style.width = stats.cpu
-        membar.style.width = stats.memory
+    if (cpuBar && membar && cpuDis && memDis) {
         const cpuVal = parseInt(stats.cpu)
         const memVal = parseInt(stats.memory)
+        cpuBar.style.width = stats.cpu
+        membar.style.width = stats.memory
+        cpuDis.innerText = cpuVal
+        memDis.innerText = memVal
         cpuBar.classList.remove('high-load', 'med-load')
         membar.classList.remove('high-load', 'med-load')
         if (cpuVal > 70) cpuBar.classList.add('high-load');
@@ -51,4 +55,5 @@ setInterval(async () => {
         if (memVal > 70) membar.classList.add('high-load');
         else if(memVal > 45) membar.classList.add('med-load')
     }
+console.log(cpuBar.classList)
 }, 2000);
