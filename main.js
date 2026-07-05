@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const os = require('os');
 const si = require('systeminformation');
 
 function createWindow() {
@@ -17,10 +18,14 @@ function createWindow() {
   ipcMain.handle('get-stats', async () => {
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();
-
+      const memPercent = Math.round((mem.active / mem.total) * 100);
+      const usedMemMB = Math.round(mem.active /1024 / 1024);
+      const totalMemMB = Math.round(mem.total / 1024 / 1024);
       return {
         cpu: Math.round(cpu.currentLoad) +"%",
-        memory: Math.round((mem.active / mem.total) * 100) +"%"
+        memory: memPercent + "%",
+        usedMemoryMB: usedMemMB,
+        totalMemoryMB: totalMemMB
       }
     });
-app.whenReady().then(createWindow);
+app.whenReady().then(createWindow); 

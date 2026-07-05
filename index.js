@@ -39,10 +39,12 @@ setInterval(async () => {
     const membar = document.querySelector('.back-bar-mem');
     const cpuDis = document.getElementById('cpu-value');
     const memDis = document.getElementById('mem-value');
+    const megbyt = document.getElementById('mb')
 
-    if (cpuBar && membar && cpuDis && memDis) {
+    if (cpuBar && membar && cpuDis && memDis && megbyt) {
         const cpuVal = parseInt(stats.cpu)
         const memVal = parseInt(stats.memory)
+        megbyt.innerText = stats.usedMemoryMB + " MB"
         cpuBar.style.width = stats.cpu
         membar.style.width = stats.memory
         cpuDis.innerText = cpuVal
