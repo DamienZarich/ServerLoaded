@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const os = require('os');
 const si = require('systeminformation');
+const Store = require('electron-store');
+const stroe = new Store()
+const savedPath = Store.get('lastServverPath')
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,7 +23,7 @@ function createWindow() {
       const mem = await si.mem ();
       const memPercent = Math.round((mem.active / mem.total) * 100);
       const usedMemMB = Math.round(mem.active /1024 / 1024);
-      const totalMemMB = Math.round(mem.total / 1024 / 1024);
+      const totalMemMB = Math.round(mem.total /1024 / 1024);
       return {
         cpu: Math.round(cpu.currentLoad) +"%",
         memory: memPercent + "%",

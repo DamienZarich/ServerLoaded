@@ -44,7 +44,7 @@ setInterval(async () => {
     if (cpuBar && membar && cpuDis && memDis && megbyt) {
         const cpuVal = parseInt(stats.cpu)
         const memVal = parseInt(stats.memory)
-        megbyt.innerText = stats.usedMemoryMB + " MB"
+        megbyt.innerText = `${stats.usedMemoryMB} MB / ${stats.totalMemoryMB} MB`
         cpuBar.style.width = stats.cpu
         membar.style.width = stats.memory
         cpuDis.innerText = cpuVal
