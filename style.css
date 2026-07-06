@@ -191,7 +191,7 @@ h3 {
 #servers {
     width: 200px;
     height: 50px;
-    background: #1e242e;
+    background: #1e1e20;
     border-style: none;
     border-radius: 10px 0 0 10px;
     display: flex;
@@ -208,4 +208,5 @@ h3 {
     justify-content: center;
     align-items: center;
     flex-direction: row;
+    border-style: none;
 }

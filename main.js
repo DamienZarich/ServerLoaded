@@ -1,4 +1,12 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+ipcMain.handle('open-folder-dialog', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  });
+  if (canceled) return null;
+  store.set('lastServerPath', filePaths[0]);
+  return filePaths[0];
+})
 const path = require('path');
 const os = require('os');
 const si = require('systeminformation');
