@@ -3,8 +3,8 @@ const path = require('path');
 const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
-const stroe = new Store()
-const savedPath = Store.get('lastServverPath')
+const store = new Store.default()
+const savedPath = store.get('lastServerPath')
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -12,7 +12,7 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
+      nodeIntegration: false,
       nodeIntegration: false
     }
   });
@@ -30,5 +30,6 @@ function createWindow() {
         usedMemoryMB: usedMemMB,
         totalMemoryMB: totalMemMB
       }
+      return store.get('lastServerPath') || "";
     });
 app.whenReady().then(createWindow); 

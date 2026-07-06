@@ -183,3 +183,29 @@ h3 {
 .high-latency {
     background: #df0b0b;
 }
+.selector {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+#servers {
+    width: 200px;
+    height: 50px;
+    background: #1e242e;
+    border-style: none;
+    border-radius: 10px 0 0 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    flex: 1;
+}
+#add-server {
+    width: 60px;
+    height: 50px;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
