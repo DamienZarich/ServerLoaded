@@ -8,23 +8,37 @@ function updateStatus(isOnline) {
 }
 const addServer = document.getElementById('add-server');
 const chooseButton = document.querySelector('.choose');
+const resetButton = document.querySelector('.reset');
+const choose = document.querySelector('.choose')
+resetButton.addEventListener('click', ResetServer);
 chooseButton.addEventListener('click', StartServer);
+
 let upTimeInt;
 let startTime;
 
 async function StartServer () {
-const reset = document.querySelector('.reset')
-const choose = document.querySelector('.choose')
 
 choose.disabled = true;
 choose.innerText = "RUNNING..."
-reset.disabled = true
-reset.innerText = "RESETING..."
-
-if (event, reset) {
-    choose.disabled = true
-    addServer.disabled = false
 }
+async function ResetServer () {
+const reset = document.querySelector('.reset')
+
+choose.disabled = true;
+reset.disabled = true
+reset.innerText = "Resetting"
+let count = 0
+let dotCounter = setInterval(() => {
+    count ++
+    if (count > 4) {
+        count = 0
+    }
+    reset.innerText = "Resetting" + ".".repeat(count)
+}, 500);
+await window.electronAPI.ResetServer()
+clearInterval(dotCounter);
+reset.innerText = "RESET"
+addServer.disabled = false
 }
 async function sendCommand(cmd) {
     const btn = event.target;
