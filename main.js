@@ -1,5 +1,13 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const fs = require('fs')
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const si = require('systeminformation');
+const Store = require('electron-store');
+const store = new Store.default()
+const savedPath = store.get('lastServerPath')
+let serverStartTime = null;
+
 ipcMain.handle('open-folder-dialog', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -27,14 +35,14 @@ function identifyServer(folderPath) {
   }
   return null;
 }
-const path = require('path');
-const os = require('os');
-const si = require('systeminformation');
-const Store = require('electron-store');
+ipcMain.handle('start-server', async (event, serverPath) => {
+  serverStartTime = Date.now();
+  return {success: true};
+});
+
 const { off } = require('cluster');
 const { error } = require('console');
-const store = new Store.default()
-const savedPath = store.get('lastServerPath')
+const { uptime } = require('process');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -54,11 +62,21 @@ function createWindow() {
       const memPercent = Math.round((mem.active / mem.total) * 100);
       const usedMemMB = Math.round(mem.active /1024 / 1024);
       const totalMemMB = Math.round(mem.total /1024 / 1024);
+
+      let uptimeString = "00:00:00";
+      if (serverStartTime) {
+        const totalSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+        const hours = Math.floor (totalSeconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor ((totalSeconds % 3600) / 60).toString().padStart(2,'0');
+        const seconds = (totalSeconds %60).toString().padStart(2, '0');
+        uptimeString = `${hours}:${minutes}:${seconds}`;
+      }
       return {
         cpu: Math.round(cpu.currentLoad) +"%",
         memory: memPercent + "%",
         usedMemoryMB: usedMemMB,
-        totalMemoryMB: totalMemMB
+        totalMemoryMB: totalMemMB,
+        uptime: uptimeString
       }
       return store.get('lastServerPath') || "";
     });

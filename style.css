@@ -218,14 +218,14 @@ h3 {
     margin-top: 60px;
 }
 .card button.choose:disabled {
-    background-color: #313439 !important;
-    color: #6b6f76 !important;
-    cursor: not-allowed !important;
-    border: 1px solid #1A202C !important;
+    background-color: #313439;
+    color: #6b6f76;
+    cursor: not-allowed;
+    border: 1px solid #1A202C;
 }
 .card button.reset:disabled {
-    background-color: #313439 !important;
-    color: #6b6f76 !important;
-    cursor: not-allowed !important;
-    border: 1px solid #1A202C !important;
+    background-color: #313439;
+    color: #6b6f76;
+    cursor: not-allowed;
+    border: 1px solid #1A202C;
 }

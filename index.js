@@ -6,12 +6,13 @@ function updateStatus(isOnline) {
         indicator.className = 'status-offline';
     }
 }
+const addServer = document.getElementById('add-server');
 const chooseButton = document.querySelector('.choose');
 chooseButton.addEventListener('click', StartServer);
 let upTimeInt;
 let startTime;
 
-function StartServer () {
+async function StartServer () {
 const reset = document.querySelector('.reset')
 const choose = document.querySelector('.choose')
 
@@ -20,18 +21,10 @@ choose.innerText = "RUNNING..."
 reset.disabled = true
 reset.innerText = "RESETING..."
 
-startTime = Date.now();
-upTimeInt = setInterval(updateUpTime, 1000);
+if (event, reset) {
+    choose.disabled = true
+    addServer.disabled = false
 }
-
-function UpTime () {
-const upTimeElement = document.getElementById('uptime-val');
-if (!upTimeElement) return;
-const totalSeconds = Math.floor((Date.now() - startTime) /1000);
-const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-const minutes = Math.floor((totalSeconds % 3600) / 60). toString().padStart(2, '0');
-const
-
 }
 async function sendCommand(cmd) {
     const btn = event.target;
@@ -59,7 +52,6 @@ setInterval( async () => {
     const stats = await window.electronAPI.getStats();
     console.log("current stats:", stats);
 }, 5000);
-const addServer = document.getElementById('add-server');
 const errorText = document.querySelector('.error');
 
 addServer.addEventListener('click', async () => {
@@ -95,7 +87,9 @@ setInterval(async () => {
     const membar = document.querySelector('.back-bar-mem');
     const cpuDis = document.getElementById('cpu-value');
     const memDis = document.getElementById('mem-value');
-    const megbyt = document.getElementById('mb')
+    const megbyt = document.getElementById('mb');
+    const uptimeDis = document.getElementById('uptime-val');
+
 
     if (cpuBar && membar && cpuDis && memDis && megbyt) {
         const cpuVal = parseInt(stats.cpu)
@@ -112,6 +106,8 @@ setInterval(async () => {
 
         if (memVal > 70) membar.classList.add('high-load');
         else if(memVal > 45) membar.classList.add('med-load')
+            if (uptimeDis && stats.uptime) {
+                uptimeDis.innerText = stats.uptime
+            }
     }
-console.log(cpuBar.classList)
 }, 2000);
