@@ -8,6 +8,9 @@ function updateStatus(isOnline) {
 }
 const chooseButton = document.querySelector('.choose');
 chooseButton.addEventListener('click', StartServer);
+let upTimeInt;
+let startTime;
+
 function StartServer () {
 const reset = document.querySelector('.reset')
 const choose = document.querySelector('.choose')
@@ -16,6 +19,19 @@ choose.disabled = true;
 choose.innerText = "RUNNING..."
 reset.disabled = true
 reset.innerText = "RESETING..."
+
+startTime = Date.now();
+upTimeInt = setInterval(updateUpTime, 1000);
+}
+
+function UpTime () {
+const upTimeElement = document.getElementById('uptime-val');
+if (!upTimeElement) return;
+const totalSeconds = Math.floor((Date.now() - startTime) /1000);
+const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+const minutes = Math.floor((totalSeconds % 3600) / 60). toString().padStart(2, '0');
+const
+
 }
 async function sendCommand(cmd) {
     const btn = event.target;
