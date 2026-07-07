@@ -199,6 +199,7 @@ h3 {
     align-items: center;
     flex-direction: row;
     flex: 1;
+    color: #E2E8F0;
 }
 #add-server {
     width: 60px;
@@ -209,4 +210,22 @@ h3 {
     align-items: center;
     flex-direction: row;
     border-style: none;
+}
+.error {
+    visibility: hidden;
+}
+.choose {
+    margin-top: 60px;
+}
+.card button.choose:disabled {
+    background-color: #313439 !important;
+    color: #6b6f76 !important;
+    cursor: not-allowed !important;
+    border: 1px solid #1A202C !important;
+}
+.card button.reset:disabled {
+    background-color: #313439 !important;
+    color: #6b6f76 !important;
+    cursor: not-allowed !important;
+    border: 1px solid #1A202C !important;
 }

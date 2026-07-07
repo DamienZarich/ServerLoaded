@@ -6,6 +6,17 @@ function updateStatus(isOnline) {
         indicator.className = 'status-offline';
     }
 }
+const chooseButton = document.querySelector('.choose');
+chooseButton.addEventListener('click', StartServer);
+function StartServer () {
+const reset = document.querySelector('.reset')
+const choose = document.querySelector('.choose')
+
+choose.disabled = true;
+choose.innerText = "RUNNING..."
+reset.disabled = true
+reset.innerText = "RESETING..."
+}
 async function sendCommand(cmd) {
     const btn = event.target;
     const originalText = btn.innerText;
@@ -32,7 +43,36 @@ setInterval( async () => {
     const stats = await window.electronAPI.getStats();
     console.log("current stats:", stats);
 }, 5000);
+const addServer = document.getElementById('add-server');
+const errorText = document.querySelector('.error');
 
+addServer.addEventListener('click', async () => {
+    const result = await window.electronAPI.openFolder();
+
+    if (!result || result.status === 'canceled') return;
+
+
+    if (result.status === 'error') {
+        errorText.style.visibility = 'visible';
+        setTimeout(() => {errorText.style.visibility = 'hidden';}, 3000);
+        return;
+    }
+     if (result.status === 'success') {
+        errorText.style.visibility = 'hidden';
+
+        const select = document.getElementById('servers');
+        const option = document.createElement('option');
+
+        option.text = result.path;
+        option.value = result.path;
+
+        select.add(option);
+        select.value = result.path
+
+        document.querySelector('.choose').disabled = false;
+        document.querySelector('.reset').disabled = false
+    }
+})
 setInterval(async () => {
     const stats = await window.electronAPI.getStats();
     const cpuBar = document.querySelector('.back-bar-cpu');

@@ -12,13 +12,17 @@
         <h3>Server Status</h3>
         <div id="status-Indicator"></div>
         <p>Online: <span id="player-count">0/10</span></p>
+        <p>Uptime: <span id="uptime-value">00:00:00</span></p>
     </div>
     <div class="card command-card">
         <h3>Command</h3>
         <div class="selector">
-        <select name="Server" id="servers"> </select>
+        <select name="Server" id="servers">Server-File</select>
         <button id="add-server"><img src="icons8-folder-24.png" alt="icons8-folder-24"></button>
         </div>
+        <h3 class="error">Not a server-file</h3>
+        <button class="choose" disabled>Select-Server</button>
+        <button class="reset" disabled>Reset</button>
     </div>
     <div class="card management-card">
         <h3>Utilites</h3>
