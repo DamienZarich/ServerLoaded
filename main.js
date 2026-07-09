@@ -36,13 +36,13 @@ function identifyServer(folderPath) {
   return null;
 }
 ipcMain.handle('start-server', async (event, serverPath) => {
+  const serverFound = identifyServer(serverPath)
+  if (!serverFound) {
+    return {success: false, message: "Could Not Locate Files"}
+  }
   serverStartTime = Date.now();
   return {success: true};
 });
-
-const { off } = require('cluster');
-const { error } = require('console');
-const { uptime } = require('process');
 
 function createWindow() {
   const win = new BrowserWindow({

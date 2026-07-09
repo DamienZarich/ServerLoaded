@@ -9,75 +9,75 @@
 <body>
  <div class="cards">
     <div class="card status-card">
-        <h3>Server Status</h3>
+        <h3>SERVER STATUS</h3>
         <div id="status-Indicator"></div>
-        <p>Online: <span id="player-count">0/10</span></p>
-        <p>Uptime: <span id="uptime-val">00:00:00</span></p>
+        <p>ONLINE: <span id="player-count">0/10</span></p>
+        <p>UPTIME: <span id="uptime-val">00:00:00</span></p>
     </div>
     <div class="card command-card">
-        <h3>Command</h3>
+        <h3>COMMAND</h3>
         <div class="selector">
         <select name="Server" id="servers">Server-File</select>
         <button id="add-server"><img src="icons8-folder-24.png" alt="icons8-folder-24"></button>
         </div>
-        <h3 class="error">Not a server-file</h3>
-        <button class="choose" disabled>Select-Server</button>
-        <button class="reset" disabled>Reset</button>
+        <h3 class="error">NOT A SERVER-FILE</h3>
+        <button class="choose" disabled>SELECT-SERVER</button>
+        <button class="reset" disabled>RESET</button>
     </div>
     <div class="card management-card">
-        <h3>Utilites</h3>
+        <h3>UTILITIES</h3>
         <input class="type" type="text" id="whitelist-input" placeholder="Player">
-        <button class="add-button" onclick="addToWhiteList()">Add To WhiteList</button>
+        <button class="add-button" onclick="addToWhiteList()">ADD TO WHITE LIST</button>
     </div>
 <div class="card log-card">
-    <h3>System Logs</h3>
+    <h3>SYSTEM LOGS</h3>
     <div id="log-window" style="font-family: monospace; font-size: 12px; color: #A0AEC0; height: 100%; overflow-y: auto;">
         > System initialized...
     </div>
 </div>
  <div class="card ping-card">
         <h1>Ping</h1>
-        <p>Server Latency:<span id="ping"> ms</span></p>
-        <p>Avg Latency:<span> ms</span></p>
-        <p>Highest Latency:<span> ms</span></p>
+        <p>SERVER LATENCY:<span id="ping"> ms</span></p>
+        <p>AVG LATENCY:<span> ms</span></p>
+        <p>HIGHEST LATENCY:<span> ms</span></p>
     </div>
     <div class="card quick-file">
-        <h1>Files</h1>
+        <h1>FILES</h1>
         <div class="File">
-        <button>Config Files</button>
-        <small style="color: #718096; font-size: 11px;">Edit server-properties</small>
+        <button>CONFIG FILES</button>
+        <small style="color: #718096; font-size: 11px;">EDIT SERVER FILE PROPERTIES</small>
         </div>
         <div class="File">
-        <button>Server Files</button>
-        <small style="color: #718096; font-size: 11px;">Open root directory</small>
+        <button>SERVER FILES</button>
+        <small style="color: #718096; font-size: 11px;">OPEN ROOT DIRECTORY</small>
         </div>
     </div>
 <div class="card telemetry-card" style="width: 100%;">
     <h3>SYSTEM TELEMETRY</h3>
     <div class="telemetry-group">
-        <label>CPU Usage</label>
+        <label>CPU USAGE</label>
         <span id="cpu-value">0</span><label class="per cpu-per">/100</label>
         <div class="progress-bar">
              <div class="back-bar-cpu"></div>
         </div>
     </div>
     <div class="telemetry-group">
-        <label>Memory Usage</label>
+        <label>MEMORY USAGE</label>
         <span id="mem-value">0</span><label class="per mem-per">/100</label>
         <div class="progress-bar">
             <div class="back-bar-mem"></div>
         </div>
-        <label class="total-used">Memory in use: </label><span id="mb">0 / 0</span>
+        <label class="total-used">MEMORY IN USE: </label><span id="mb">0 / 0</span>
     </div>
      <div class="keys">
             <div class="red">
-                <div class="color-box red"></div> <span>High Load</span>
+                <div class="color-box red"></div> <span>HIGH LOAD</span>
             </div>
             <div class="yellow">
-                <div class="color-box yellow"></div> <span>Med Load</span>
+                <div class="color-box yellow"></div> <span>MED LOAD</span>
             </div>
             <div class="blue">
-                <div class="color-box blue"></div> <span>Server Load</span>
+                <div class="color-box blue"></div> <span>SERVER LOAD</span>
             </div>
         </div>
     </div>

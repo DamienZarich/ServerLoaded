@@ -10,35 +10,71 @@ const addServer = document.getElementById('add-server');
 const chooseButton = document.querySelector('.choose');
 const resetButton = document.querySelector('.reset');
 const choose = document.querySelector('.choose')
+const reset = document.querySelector('.reset')
 resetButton.addEventListener('click', ResetServer);
 chooseButton.addEventListener('click', StartServer);
+const logWindow = document.getElementById('log-window');
 
 let upTimeInt;
 let startTime;
 
 async function StartServer () {
-
+logEvent("Fetching Server...")
+reset.disabled = true;
 choose.disabled = true;
 choose.innerText = "RUNNING..."
+let startTime = 0
+let startCounter = setInterval(() => {
+    startTime ++
+    if (startTime >4) {
+        startTime = 0
+    }
+    choose.innerText = "RUNNING" + ".".repeat(startTime);
+}, 500);
+const serverSelect = document.getElementById('servers');
+const selectedPath = serverSelect ? serverSelect.value : '';
+const response = await window.electronAPI.StartServer(selectedPath);
+if (!response.success) {
+    clearInterval(startCounter);
+    errorText.style.visibility = 'visible' 
+    setTimeout(() => {
+     errorText.style.visibility = 'hidden' 
+    }, 3000);
+    logEvent("Could Not Locate Files");
+    choose.innerText = "SELECT-SERVER"
+    choose.disabled = false
+    reset.disabled = false
+    return;
+}
+if (response.success) {
+    logEvent("Server Found");
+    choose.innerText = "SELECT-FILES";
+    choose.disabled = false;
+    reset.disabled = false;
+    clearInterval(startCounter)
+    return;
+}
+logEvent("Server Found")
+choose.innerText = "SELECT-SERVER"
+reset.disabled = false
 }
 async function ResetServer () {
-const reset = document.querySelector('.reset')
-
+logEvent("Resetting Server...")
 choose.disabled = true;
 reset.disabled = true
-reset.innerText = "Resetting"
+reset.innerText = "RESETTING"
 let count = 0
 let dotCounter = setInterval(() => {
     count ++
     if (count > 4) {
         count = 0
     }
-    reset.innerText = "Resetting" + ".".repeat(count)
+    reset.innerText = "RESETTING" + ".".repeat(count)
 }, 500);
 await window.electronAPI.ResetServer()
+logEvent("Server Reset")
 clearInterval(dotCounter);
 reset.innerText = "RESET"
-addServer.disabled = false
 }
 async function sendCommand(cmd) {
     const btn = event.target;
@@ -58,7 +94,6 @@ async function sendCommand(cmd) {
    }, 1000);
 }
 function logEvent(message) {
-    const logWindow = document.getElementById('log-window');
     logWindow.innerHTML += `<br>> ${message}`;
     logWindow.scrollTop = logWindow.scrollHeight;
 }
@@ -122,6 +157,6 @@ setInterval(async () => {
         else if(memVal > 45) membar.classList.add('med-load')
             if (uptimeDis && stats.uptime) {
                 uptimeDis.innerText = stats.uptime
-            }
+        }
     }
 }, 2000);
