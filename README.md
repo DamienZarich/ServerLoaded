@@ -1,6 +1,6 @@
-A clean, responsive dashboard designed to provide real-time status and control for my private game server.
-This tool removes the need to manually check console windows by providing a simplified interface for server management.
-Preview
+We need a way to be able to view the statistics of our servers on major games such as Minecraft, Ark, and Rust without needing
+to dig through folder and files, those are times of the past. Today we need a universal server dashboard displaying server statistics
+and making it easier on the user to get insights on what their playing and how its afffecting their performance
 
 Key Features
 
