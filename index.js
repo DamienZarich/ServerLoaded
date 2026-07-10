@@ -11,13 +11,23 @@ const chooseButton = document.querySelector('.choose');
 const resetButton = document.querySelector('.reset');
 const choose = document.querySelector('.choose')
 const reset = document.querySelector('.reset')
-resetButton.addEventListener('click', ResetServer);
+resetButton.addEventListener('click', handleReset);
 chooseButton.addEventListener('click', StartServer);
 const logWindow = document.getElementById('log-window');
+const serverSelect = document.getElementById('servers');    
 
 let upTimeInt;
 let startTime;
 
+function checkSelection () {
+if (serverSelect.value.trim() === "") {
+    choose.disabled = true;
+    reset.disabled = true
+} else {
+    choose.disabled = false
+    reset.disabled = false
+}
+};
 async function StartServer () {
 logEvent("Fetching Server...")
 reset.disabled = true;
@@ -31,7 +41,6 @@ let startCounter = setInterval(() => {
     }
     choose.innerText = "RUNNING" + ".".repeat(startTime);
 }, 500);
-const serverSelect = document.getElementById('servers');
 const selectedPath = serverSelect ? serverSelect.value : '';
 const response = await window.electronAPI.StartServer(selectedPath);
 if (!response.success) {
@@ -42,15 +51,17 @@ if (!response.success) {
     }, 3000);
     logEvent("Could Not Locate Files");
     choose.innerText = "SELECT-SERVER"
-    choose.disabled = false
-    reset.disabled = false
+    choose.disabled = false;
+    reset.disabled = false;
+    addServer.disabled = false;
     return;
 }
 if (response.success) {
     logEvent("Server Found");
     choose.innerText = "SELECT-FILES";
-    choose.disabled = false;
+    choose.disabled = true;
     reset.disabled = false;
+    addServer.disabled = true
     clearInterval(startCounter)
     return;
 }
@@ -58,11 +69,12 @@ logEvent("Server Found")
 choose.innerText = "SELECT-SERVER"
 reset.disabled = false
 }
-async function ResetServer () {
+async function handleReset () {
 logEvent("Resetting Server...")
 choose.disabled = true;
 reset.disabled = true
 reset.innerText = "RESETTING"
+addServer.disabled = true
 let count = 0
 let dotCounter = setInterval(() => {
     count ++
@@ -72,12 +84,15 @@ let dotCounter = setInterval(() => {
     reset.innerText = "RESETTING" + ".".repeat(count)
 }, 500);
 await window.electronAPI.ResetServer()
+serverSelect.innerHTML = "";
+addServer.disabled = false;
 logEvent("Server Reset")
 clearInterval(dotCounter);
 reset.innerText = "RESET"
+choose.innerText = "SELECT-SERVER"
 }
 async function sendCommand(cmd) {
-    const btn = event.target;
+    const btn = choose;
     const originalText = btn.innerText;
 
     btn.innerText = "EXECUTING...";
@@ -160,3 +175,13 @@ setInterval(async () => {
         }
     }
 }, 2000);
+  document.addEventListener("DOMContentLoaded", async () => {
+    const pathResult = await window.electronAPI.getSavedPath();
+    if (pathResult) {
+      const option = document.createElement("option");
+      option.text = pathResult
+      serverSelect.add(option)
+      serverSelect.value = pathResult
+    }
+    checkSelection();
+  });

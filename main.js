@@ -5,9 +5,12 @@ const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
 const store = new Store.default()
-const savedPath = store.get('lastServerPath')
 let serverStartTime = null;
 
+
+ipcMain.handle('get-saved-path', async () => {
+  return store.get('lastServerPath') || "";
+});
 ipcMain.handle('open-folder-dialog', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -42,6 +45,10 @@ ipcMain.handle('start-server', async (event, serverPath) => {
   }
   serverStartTime = Date.now();
   return {success: true};
+});
+ipcMain.handle('reset', async (event, serverPath) => {
+ serverStartTime = null
+ return {success: true};
 });
 
 function createWindow() {
