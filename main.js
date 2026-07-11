@@ -41,6 +41,9 @@ function identifyServer(folderPath) {
   return null;
 }
 function checkServerStatus(address) {
+  if (!address || address.trim() === "") {
+    return Promise.resolve(false);
+  }
   const folderPath = store.get('lastServerPath')
   const gameType = identifyServer(folderPath)
   const gamePorts = {
@@ -51,7 +54,7 @@ function checkServerStatus(address) {
   const ports = gamePorts[gameType] || 25565
   return new Promise((resolve) => {
     const socket = net.createConnection(ports, address);
-    socket.timeout(1000);
+    socket.setTimeout(1000);
     socket.on('connect', () => {
     resolve(true);
     socket.destroy();
@@ -98,7 +101,14 @@ function createWindow() {
   ipcMain.handle('get-stats', async () => {
       let isOnline = false
       if (serverAddress !== null && serverAddress !== "") {
+        isOnline = await checkServerStatus(serverAddress);
 
+        if (isOnline && !serverStartTime) {
+          serverStartTime = Date.now();
+        }
+        else if (!isOnline) {
+          serverStartTime = null;
+        }
       }
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();

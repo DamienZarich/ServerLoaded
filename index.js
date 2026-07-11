@@ -11,17 +11,19 @@ const chooseButton = document.querySelector('.choose');
 const resetButton = document.querySelector('.reset');
 const choose = document.querySelector('.choose')
 const reset = document.querySelector('.reset')
-resetButton.addEventListener('click', handleReset);
-chooseButton.addEventListener('click', StartServer);
 const logWindow = document.getElementById('log-window');
 const serverSelect = document.getElementById('servers');
-const serverPath = document.querySelector('.server-address')  
+const serverPath = document.querySelector('.server-address');
+resetButton.addEventListener('click', handleReset);
+chooseButton.addEventListener('click', StartServer);
+serverPath.addEventListener('input', checkSelection);
+serverSelect.addEventListener('change', checkSelection);
 
 let upTimeInt;
 let startTime;
 
 function checkSelection () {
-if (serverSelect.value.trim() === "") {
+if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
     choose.disabled = true;
     reset.disabled = true
 } else {
@@ -128,10 +130,6 @@ addServer.addEventListener('click', async () => {
     if (!result || result.status === 'canceled') { 
         addServer.disabled = false;
         return;}
-    if (serverPath.value === "") {
-        reset.disabled = true;
-        startTime.disabled = true;
-    }
 
     if (result.status === 'error') {
         errorText.style.visibility = 'visible';
