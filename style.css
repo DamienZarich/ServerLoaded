@@ -229,3 +229,17 @@ h3 {
     cursor: not-allowed;
     border: 1px solid #1A202C;
 }
+.server-address {
+    font-size: 16px;
+    width: 300px;
+    height: 50px;
+    background: #1e1e20;
+    border-style: none;
+    border-radius: 10px 10px 10px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    color: #E2E8F0;
+    text-align: center;
+}

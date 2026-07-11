@@ -4,7 +4,9 @@ const path = require('path');
 const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
-const store = new Store.default()
+const net = require('net');
+const store = new Store.default();
+let serverAddress = null;
 let serverStartTime = null;
 
 
@@ -38,8 +40,37 @@ function identifyServer(folderPath) {
   }
   return null;
 }
-ipcMain.handle('start-server', async (event, serverPath) => {
-  const serverFound = identifyServer(serverPath)
+function checkServerStatus(address) {
+  const folderPath = store.get('lastServerPath')
+  const gameType = identifyServer(folderPath)
+  const gamePorts = {
+    "Minecraft": 25565,
+    "Ark": 7777,
+    "Rust": 28015
+  }
+  const ports = gamePorts[gameType] || 25565
+  return new Promise((resolve) => {
+    const socket = net.createConnection(ports, address);
+    socket.timeout(1000);
+    socket.on('connect', () => {
+    resolve(true);
+    socket.destroy();
+  });
+
+socket.on('timeout', () => {
+    resolve(false);
+    socket.destroy();
+  });
+
+socket.on('error', () => {
+    resolve(false);
+    socket.destroy();
+  });
+    })
+}
+ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
+  const serverFound = identifyServer(serverPath) 
+  serverAddress = incomingAddress
   if (!serverFound) {
     return {success: false, message: "Could Not Locate Files"}
   }
@@ -47,6 +78,7 @@ ipcMain.handle('start-server', async (event, serverPath) => {
   return {success: true};
 });
 ipcMain.handle('reset', async (event, serverPath) => {
+ serverAddress = null
  serverStartTime = null
  return {success: true};
 });
@@ -64,6 +96,10 @@ function createWindow() {
   win.loadFile('index.html')
 }
   ipcMain.handle('get-stats', async () => {
+      let isOnline = false
+      if (serverAddress !== null && serverAddress !== "") {
+
+      }
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();
       const memPercent = Math.round((mem.active / mem.total) * 100);
@@ -83,8 +119,8 @@ function createWindow() {
         memory: memPercent + "%",
         usedMemoryMB: usedMemMB,
         totalMemoryMB: totalMemMB,
-        uptime: uptimeString
+        uptime: uptimeString,
+        online: isOnline
       }
-      return store.get('lastServerPath') || "";
     });
 app.whenReady().then(createWindow); 

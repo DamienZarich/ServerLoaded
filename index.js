@@ -14,7 +14,8 @@ const reset = document.querySelector('.reset')
 resetButton.addEventListener('click', handleReset);
 chooseButton.addEventListener('click', StartServer);
 const logWindow = document.getElementById('log-window');
-const serverSelect = document.getElementById('servers');    
+const serverSelect = document.getElementById('servers');
+const serverPath = document.querySelector('.server-address')  
 
 let upTimeInt;
 let startTime;
@@ -42,7 +43,8 @@ let startCounter = setInterval(() => {
     choose.innerText = "RUNNING" + ".".repeat(startTime);
 }, 500);
 const selectedPath = serverSelect ? serverSelect.value : '';
-const response = await window.electronAPI.StartServer(selectedPath);
+const IPAddressValue = serverPath ? serverPath.value : "";
+const response = await window.electronAPI.StartServer(selectedPath, IPAddressValue);
 if (!response.success) {
     clearInterval(startCounter);
     errorText.style.visibility = 'visible' 
@@ -88,6 +90,7 @@ serverSelect.innerHTML = "";
 addServer.disabled = false;
 logEvent("Server Reset")
 clearInterval(dotCounter);
+serverPath.value = ""
 reset.innerText = "RESET"
 choose.innerText = "SELECT-SERVER"
 }
@@ -119,14 +122,21 @@ setInterval( async () => {
 const errorText = document.querySelector('.error');
 
 addServer.addEventListener('click', async () => {
+    addServer.disabled = true;
     const result = await window.electronAPI.openFolder();
 
-    if (!result || result.status === 'canceled') return;
-
+    if (!result || result.status === 'canceled') { 
+        addServer.disabled = false;
+        return;}
+    if (serverPath.value === "") {
+        reset.disabled = true;
+        startTime.disabled = true;
+    }
 
     if (result.status === 'error') {
         errorText.style.visibility = 'visible';
         setTimeout(() => {errorText.style.visibility = 'hidden';}, 3000);
+        addServer.disabled = false
         return;
     }
      if (result.status === 'success') {
@@ -141,8 +151,9 @@ addServer.addEventListener('click', async () => {
         select.add(option);
         select.value = result.path
 
-        document.querySelector('.choose').disabled = false;
-        document.querySelector('.reset').disabled = false
+        checkSelection();
+
+        addServer.disabled = false
     }
 })
 setInterval(async () => {
