@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -36,6 +36,25 @@ ipcMain.handle('save-server-address', async (event, folderPath, ipAddress) => {
   }
   return true;
 });
+ipcMain.handle('open-folder-channel', async (event, folderPath) => {
+  if (fs.existsSync(folderPath)) {
+    await shell.openPath(folderPath);
+    return {success: true}
+  } else {
+    return {success: false, message: "Folder Not Found"}
+  }
+})
+ipcMain.handle('open-config-channel', async (event, folderPath) => {
+  const gameType = identifyServer(folderPath)
+  const configFile = gameSignatures[gameType];
+  const fullPath = path.join(folderPath, configFile);
+  if (fs.existsSync(fullPath)) {
+  await shell.openPath(fullPath);
+  return {success: true};
+  } else {
+    return {success: false, message: `Config file (${configFile}) not found`};
+  }
+})
 ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
   return store.get(`ips.${folderPath}`) || ""
 });
@@ -65,8 +84,14 @@ function checkServerStatus(address) {
   }
   const ports = gamePorts[gameType] || 25565
   return new Promise((resolve) => {
-    const socket = net.createConnection(ports, address);
+    let socket;
+    try {
+    socket = net.createConnection(ports, address);
     socket.setTimeout(1000);
+  } catch (err) {
+    resolve(false);
+    return;
+    }
     socket.on('connect', () => {
     resolve(true);
     socket.destroy();
@@ -81,13 +106,17 @@ socket.on('error', () => {
     resolve(false);
     socket.destroy();
   });
-    })
+ });
 }
 ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   const serverFound = identifyServer(serverPath) 
   serverAddress = incomingAddress
   if (!serverFound) {
-    return {success: false, message: "Could Not Locate Files"}
+    return {success: false, reason: "files", message: "Could Not Locate Files"}
+  }
+  const isOnline = await checkServerStatus(serverAddress);
+  if (!isOnline) {
+    return {success: false, reason: "network", message: "Server IP is incorrect or unreachable"};
   }
   return {success: true};
 });
@@ -103,7 +132,6 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,
       nodeIntegration: false
     }
   });

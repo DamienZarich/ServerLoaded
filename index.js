@@ -14,6 +14,7 @@ const reset = document.querySelector('.reset')
 const logWindow = document.getElementById('log-window');
 const serverSelect = document.getElementById('servers');
 const serverPath = document.querySelector('.server-address');
+const errorText = document.querySelector('.error');
 resetButton.addEventListener('click', handleReset);
 chooseButton.addEventListener('click', StartServer);
 serverPath.addEventListener('input', checkSelection);
@@ -58,12 +59,21 @@ const selectedPath = serverSelect ? serverSelect.value : '';
 const IPAddressValue = serverPath ? serverPath.value : "";
 const response = await window.electronAPI.StartServer(selectedPath, IPAddressValue);
 if (!response.success) {
-    clearInterval(startCounter);
-    errorText.style.visibility = 'visible' 
+    clearInterval(startCounter)
+    if (response.reason === "network") {
+        errorText.innerText = "incorrect IP address or server offline";
+        errorText.style.fontSize = "12px"
+        logEvent("Error: Connection Faild (Check IP)");
+    } else {
+        errorText.innerText = "Could Not Locate Server Files";
+        logEvent("Error: Path Verification Failed");
+    }
+    errorText.style.visibility = 'visible';
+
     setTimeout(() => {
-     errorText.style.visibility = 'hidden' 
+        errorText.style.visibility = 'hidden';
+        errorText.innerText = "Not a Server Address"
     }, 3000);
-    logEvent("Could Not Locate Files");
     choose.innerText = "SELECT-SERVER"
     choose.disabled = false;
     reset.disabled = false;
@@ -79,11 +89,7 @@ if (response.success) {
     addServer.disabled = true
     clearInterval(startCounter)
     return;
-}
-logEvent("Server Found");
-await window.electronAPI.saveServerAddress(selectedPath, IPAddressValue);
-choose.innerText = "SELECT-SERVER"
-reset.disabled = false
+ }
 }
 async function handleReset () {
 logEvent("Resetting Server...")
@@ -129,6 +135,12 @@ async function sendCommand(cmd) {
 function logEvent(message) {
     logWindow.innerHTML += `<br>> ${message}`;
     logWindow.scrollTop = logWindow.scrollHeight;
+}
+function configFiles() {
+
+}
+function serverFiles() {
+
 }
 
 addServer.addEventListener('click', async () => {
