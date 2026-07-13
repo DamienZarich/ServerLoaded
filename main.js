@@ -5,6 +5,7 @@ const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
 const net = require('net');
+const { eventLoopUtilization } = require('perf_hooks');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
@@ -25,8 +26,19 @@ ipcMain.handle('open-folder-dialog', async () => {
   return {status: 'error'};
  }
  store.set('lastServerPath', folderPath);
- return {status: 'success', path: folderPath, game: detectedGame};
-})
+ const savedIP = store.get(`ips.${folderPath}`) || "";
+ return {status: 'success', path: folderPath, game: detectedGame, savedIP: savedIP};
+});
+
+ipcMain.handle('save-server-address', async (event, folderPath, ipAddress) => {
+  if (folderPath && ipAddress) {
+    store.set(`ips.${folderPath}`, ipAddress)
+  }
+  return true;
+});
+ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
+  return store.get(`ips.${folderPath}`) || ""
+});
 const gameSignatures = {
   "Minecraft": "server.properties",
   "Rust": "server.cfg",
@@ -77,7 +89,6 @@ ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   if (!serverFound) {
     return {success: false, message: "Could Not Locate Files"}
   }
-  serverStartTime = Date.now();
   return {success: true};
 });
 ipcMain.handle('reset', async (event, serverPath) => {

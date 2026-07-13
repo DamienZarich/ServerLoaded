@@ -17,7 +17,7 @@ const serverPath = document.querySelector('.server-address');
 resetButton.addEventListener('click', handleReset);
 chooseButton.addEventListener('click', StartServer);
 serverPath.addEventListener('input', checkSelection);
-serverSelect.addEventListener('change', checkSelection);
+serverSelect.addEventListener('change', handleServerChange);
 
 let upTimeInt;
 let startTime;
@@ -31,6 +31,16 @@ if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
     reset.disabled = false
 }
 };
+async function handleServerChange() {
+    const selectedPath = serverSelect.value;
+    if (selectedPath && selectedPath.trim() !== "") {
+        const savedIP = await window.electronAPI.getIpForPath(selectedPath);
+        serverPath.value = savedIP || "";
+    } else {
+        serverPath.value = "";
+    }
+    checkSelection();
+}
 async function StartServer () {
 logEvent("Fetching Server...")
 reset.disabled = true;
@@ -62,6 +72,7 @@ if (!response.success) {
 }
 if (response.success) {
     logEvent("Server Found");
+    await window.electronAPI.saveServerAddress(selectedPath, IPAddressValue);
     choose.innerText = "SELECT-FILES";
     choose.disabled = true;
     reset.disabled = false;
@@ -69,7 +80,8 @@ if (response.success) {
     clearInterval(startCounter)
     return;
 }
-logEvent("Server Found")
+logEvent("Server Found");
+await window.electronAPI.saveServerAddress(selectedPath, IPAddressValue);
 choose.innerText = "SELECT-SERVER"
 reset.disabled = false
 }
@@ -88,13 +100,14 @@ let dotCounter = setInterval(() => {
     reset.innerText = "RESETTING" + ".".repeat(count)
 }, 500);
 await window.electronAPI.ResetServer()
-serverSelect.innerHTML = "";
+serverSelect.value = "";
 addServer.disabled = false;
 logEvent("Server Reset")
 clearInterval(dotCounter);
 serverPath.value = ""
 reset.innerText = "RESET"
 choose.innerText = "SELECT-SERVER"
+checkSelection();
 }
 async function sendCommand(cmd) {
     const btn = choose;
@@ -117,11 +130,6 @@ function logEvent(message) {
     logWindow.innerHTML += `<br>> ${message}`;
     logWindow.scrollTop = logWindow.scrollHeight;
 }
-setInterval( async () => {
-    const stats = await window.electronAPI.getStats();
-    console.log("current stats:", stats);
-}, 5000);
-const errorText = document.querySelector('.error');
 
 addServer.addEventListener('click', async () => {
     addServer.disabled = true;
@@ -149,6 +157,12 @@ addServer.addEventListener('click', async () => {
         select.add(option);
         select.value = result.path
 
+        if (result.savedIP) {
+            serverPath.value = result.savedIP;
+        } else {
+            serverPath.value = ""
+        }
+
         checkSelection();
 
         addServer.disabled = false
@@ -162,6 +176,10 @@ setInterval(async () => {
     const memDis = document.getElementById('mem-value');
     const megbyt = document.getElementById('mb');
     const uptimeDis = document.getElementById('uptime-val');
+
+    if (stats && typeof stats.online !== 'undefined') {
+        updateStatus(stats.online);
+    }
 
 
     if (cpuBar && membar && cpuDis && memDis && megbyt) {
@@ -191,6 +209,8 @@ setInterval(async () => {
       option.text = pathResult
       serverSelect.add(option)
       serverSelect.value = pathResult
+      const savedIP = await window.electronAPI.getIpForPath(pathResult);
+      serverPath.value = savedIP || "";
     }
     checkSelection();
   });
