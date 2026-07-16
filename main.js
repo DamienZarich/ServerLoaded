@@ -6,10 +6,10 @@ const si = require('systeminformation');
 const Store = require('electron-store');
 const net = require('net');
 const { eventLoopUtilization } = require('perf_hooks');
+const { lazy } = require('react');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
-
 
 ipcMain.handle('get-saved-path', async () => {
   return store.get('lastServerPath') || "";
@@ -73,7 +73,7 @@ function identifyServer(folderPath) {
 }
 function checkServerStatus(address) {
   if (!address || address.trim() === "") {
-    return Promise.resolve(false);
+    return Promise.resolve({online: false, latency: null});
   }
   const folderPath = store.get('lastServerPath')
   const gameType = identifyServer(folderPath)
@@ -85,25 +85,26 @@ function checkServerStatus(address) {
   const ports = gamePorts[gameType] || 25565
   return new Promise((resolve) => {
     let socket;
+    const startTime = performance.now();
     try {
     socket = net.createConnection(ports, address);
     socket.setTimeout(1000);
   } catch (err) {
-    resolve(false);
+    resolve({online: false, latency: null});
     return;
     }
     socket.on('connect', () => {
-    resolve(true);
+    const latency = Math.round(performance.now() - startTime);
+    resolve({online: true, latency: latency});
     socket.destroy();
   });
-
 socket.on('timeout', () => {
-    resolve(false);
+    resolve({online: false, latency: null});
     socket.destroy();
   });
 
 socket.on('error', () => {
-    resolve(false);
+    resolve({online: false, latency: null});
     socket.destroy();
   });
  });
@@ -114,8 +115,8 @@ ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   if (!serverFound) {
     return {success: false, reason: "files", message: "Could Not Locate Files"}
   }
-  const isOnline = await checkServerStatus(serverAddress);
-  if (!isOnline) {
+  const statusReady = await checkServerStatus(serverAddress);
+  if (!statusReady.online) {
     return {success: false, reason: "network", message: "Server IP is incorrect or unreachable"};
   }
   return {success: true};
@@ -125,7 +126,6 @@ ipcMain.handle('reset', async (event, serverPath) => {
  serverStartTime = null
  return {success: true};
 });
-
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -139,8 +139,11 @@ function createWindow() {
 }
   ipcMain.handle('get-stats', async () => {
       let isOnline = false
+      let currentLatency = null;
       if (serverAddress !== null && serverAddress !== "") {
-        isOnline = await checkServerStatus(serverAddress);
+        const statusReady = await checkServerStatus(serverAddress);
+        isOnline = statusReady.online;
+        currentLatency = statusReady.latency;
 
         if (isOnline && !serverStartTime) {
           serverStartTime = Date.now();
@@ -169,7 +172,8 @@ function createWindow() {
         usedMemoryMB: usedMemMB,
         totalMemoryMB: totalMemMB,
         uptime: uptimeString,
-        online: isOnline
+        online: isOnline,
+        latency: currentLatency
       }
     });
 app.whenReady().then(createWindow); 

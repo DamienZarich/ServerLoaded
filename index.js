@@ -1,3 +1,5 @@
+const { stat } = require("original-fs");
+
 function updateStatus(isOnline) {
     const indicator = document.getElementById('status-Indicator');
     if (isOnline) {
@@ -15,6 +17,9 @@ const logWindow = document.getElementById('log-window');
 const serverSelect = document.getElementById('servers');
 const serverPath = document.querySelector('.server-address');
 const errorText = document.querySelector('.error');
+const avgPing = document.getElementById('avgping');
+const highPing = document.getElementById('highping');
+const servPing = document.getElementById('servping');
 resetButton.addEventListener('click', handleReset);
 chooseButton.addEventListener('click', StartServer);
 serverPath.addEventListener('input', checkSelection);
@@ -22,14 +27,21 @@ serverSelect.addEventListener('change', handleServerChange);
 
 let upTimeInt;
 let startTime;
+let serverPing = 0;
+let highestPing = 0;
+let averagePing = 0;
+let pingSum = 0;
+let pingCount = 0;
 
 function checkSelection () {
 if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
     choose.disabled = true;
-    reset.disabled = true
+    reset.disabled = true;
+    serverPath.disabled = true;
 } else {
     choose.disabled = false
     reset.disabled = false
+    serverPath.disabled = false;
 }
 };
 async function handleServerChange() {
@@ -137,10 +149,26 @@ function logEvent(message) {
     logWindow.scrollTop = logWindow.scrollHeight;
 }
 function configFiles() {
-
+    const configbtn = document.querySelector('.confbtn')
+    configbtn.addEventListener('click', async() => {
+        const selectedPath = serverSelect.value;
+    if (!selectedPath || selectedPath.trim() === "") {
+        logEvent("Please Select a Server First");
+        return;
+    }
+    await window.electronAPI.configFiles(selectedPath);
+    })
 }
 function serverFiles() {
-
+    const serverbtn = document.querySelector('.servbtn')
+    serverbtn.addEventListener('click', async() => {
+        const selectedPath = serverSelect.value;
+        if (!selectedPath || selectedPath.trim() === "") {
+            logEvent("Please Select a Server First");
+            return;
+        }
+        await window.electronAPI.serverFiles(selectedPath);
+    });
 }
 
 addServer.addEventListener('click', async () => {
@@ -192,7 +220,30 @@ setInterval(async () => {
     if (stats && typeof stats.online !== 'undefined') {
         updateStatus(stats.online);
     }
+    if (servPing) {
+        if (stats && stats.online && typeof stats.latency === 'number') {
+            const currentPing = stats.latency;
+            servPing.innerText = stats.latency + " ms";
+            if (highestPing === 0 || currentPing > highestPing) {
+                highestPing = currentPing;
+                if (highPing) highPing.innerText = highestPing + " ms"
+            }
+            pingCount++;
+            pingSum += currentPing;
+            averagePing = Math.round(pingSum / pingCount);
+            if (avgPing) avgPing.innerText = averagePing + " ms";
 
+        } else {
+            servPing.innerText = "--ms"
+
+            highestPing = 0;
+            averagePing = 0;
+            pingSum = 0;
+            pingCount = 0;
+            if (highPing) highPing.innerText = "--ms"
+            if (avgPing) avgPing.innerText = "--ms"
+        }
+    }
 
     if (cpuBar && membar && cpuDis && memDis && megbyt) {
         const cpuVal = parseInt(stats.cpu)
@@ -225,4 +276,6 @@ setInterval(async () => {
       serverPath.value = savedIP || "";
     }
     checkSelection();
+    configFiles();
+    serverFiles();
   });
