@@ -157,7 +157,15 @@ function createWindow() {
       fs.mkdir(backupdir, {recursive: true});
     }
     const timestamp = new.Date().toISOString().replace(/[:.]/g, '-');
-    const des
+    const destinationPath = path.join(backupdir, `${gameType}-Backup-${timestamp}`)
+
+    try {
+      fs.cpSync(fullSourcePath, destinationPath, {recursive: true})
+      return {success: true, message: "Backup Has Been Created"}
+    } catch (error) {
+      console.error("Backup Failded:", error);
+      return {success: false, message: "Failedl To Create Backup"}
+    }
   })
   ipcMain.handle('get-stats', async () => {
       let statusState = "OFFLINE"
