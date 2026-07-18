@@ -5,8 +5,6 @@ const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
 const net = require('net');
-const { eventLoopUtilization } = require('perf_hooks');
-const { lazy } = require('react');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
@@ -121,7 +119,7 @@ ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   }
   return {success: true};
 });
-ipcMain.handle('reset', async (event, serverPath) => {
+ipcMain.handle('ResetServer', async (event, serverPath) => {
  serverAddress = null
  serverStartTime = null
  return {success: true};
@@ -138,9 +136,11 @@ function createWindow() {
   win.loadFile('index.html')
 }
   ipcMain.handle('get-stats', async () => {
-      let isOnline = false
+      let statusState = "OFFLINE"
       let currentLatency = null;
-      if (serverAddress !== null && serverAddress !== "") {
+      if (serverAddress && typeof serverAddress === 'string' && serverAddress.trim() !== "") {
+        statusState = "NONE";
+      } else {
         const statusReady = await checkServerStatus(serverAddress);
         isOnline = statusReady.online;
         currentLatency = statusReady.latency;
@@ -152,6 +152,7 @@ function createWindow() {
           serverStartTime = null;
         }
       }
+      
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();
       const memPercent = Math.round((mem.active / mem.total) * 100);
@@ -159,7 +160,7 @@ function createWindow() {
       const totalMemMB = Math.round(mem.total /1024 / 1024);
 
       let uptimeString = "00:00:00";
-      if (serverStartTime) {
+      if (serverStartTime && statusState === "ONLINE") {
         const totalSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
         const hours = Math.floor (totalSeconds / 3600).toString().padStart(2, '0');
         const minutes = Math.floor ((totalSeconds % 3600) / 60).toString().padStart(2,'0');
@@ -173,6 +174,7 @@ function createWindow() {
         totalMemoryMB: totalMemMB,
         uptime: uptimeString,
         online: isOnline,
+        status: statusState,
         latency: currentLatency
       }
     });

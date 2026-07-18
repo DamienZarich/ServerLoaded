@@ -1,11 +1,11 @@
-const { stat } = require("original-fs");
-
-function updateStatus(isOnline) {
+function updateStatus(status) {
     const indicator = document.getElementById('status-Indicator');
-    if (isOnline) {
+    if (status === "ONLINE") {
         indicator.className = 'status-online';
-    } else {
+    } else if (status === "OFFLINE"){
         indicator.className = 'status-offline';
+    } else {
+        indicator.className = 'status-404'
     }
 }
 const addServer = document.getElementById('add-server');
@@ -37,7 +37,7 @@ function checkSelection () {
 if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
     choose.disabled = true;
     reset.disabled = true;
-    serverPath.disabled = true;
+    serverPath.disabled = false;
 } else {
     choose.disabled = false
     reset.disabled = false
@@ -279,3 +279,24 @@ setInterval(async () => {
     configFiles();
     serverFiles();
   });
+  document.getElementById('server-backup').addEventListener('click', async () => {
+    const statusText = document.getElementById('backup-status');
+    const backupbtn = document.getElementById('server-backup');
+    backupbtn.disabled = true
+    statusText.innerText = "Copying Server Files... Please Wait";
+    statusText.style.color = "#ecc94b";
+
+    try {
+        const result = await window.Electron.ipcRenderer.invoke('create-server-backup');
+
+        if (result.success) {
+            statusText.innerText = result.message;
+            statusText.style.color = "#48BB78";
+        } else {
+            statusText.innerText = `ERROR: ${result.message}`;
+            statusText.style.color = #F56565;
+        }
+    } catch(error) {
+        statusText.innerText = "IPC Connection Faild"
+    }
+  })

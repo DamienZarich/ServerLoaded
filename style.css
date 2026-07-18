@@ -59,10 +59,36 @@ h1, h2, h3 {
     background-color: #4A5568;
     display: inline-block;
     margin-right: 8px;
+    animation-name: pulse;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
 }
-.status-online { background-color: #48BB78; 
+.status-404 { 
+    --pulse-color: #4A5568;
 }
-.status-offline { background-color: #F56565; 
+.status-online { 
+    --pulse-color: #48BB78; 
+}
+.status-offline { 
+    --pulse-color: #F56565; 
+}
+@keyframes pulse {
+    0% {
+        scale: 1;
+        background-color: var(--pulse-color);
+        box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        scale: 1.5;
+        background-color: var(--pulse-color);
+        box-shadow: 0 0 8px 2px var(--pulse-color);
+    }
+    100% {
+        scale: 1;
+        background-color: var(--pulse-color);
+        box-shadow: 0 0 0 0px rgba(255, 255, 255, 0);
+    }
 }
 @media (max-width: 1200px) {
     .cards {
@@ -106,7 +132,7 @@ h1, h2, h3 {
 .back-bar-cpu, .back-bar-mem {
     position: absolute;
     height: 100%;
-    transition: ease 0.5s;
+    transition: width 0.5s ease;
 }
 .back-bar-cpu {
 width: 0;
@@ -242,4 +268,9 @@ h3 {
     flex-direction: row;
     color: #E2E8F0;
     text-align: center;
+}
+small {
+    text-align: center;
+    color: #718096;
+    display: block;
 }
