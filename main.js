@@ -5,6 +5,7 @@ const os = require('os');
 const si = require('systeminformation');
 const Store = require('electron-store');
 const net = require('net');
+const { channel } = require('diagnostics_channel');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
@@ -135,6 +136,29 @@ function createWindow() {
   });
   win.loadFile('index.html')
 }
+  ipcMain.handle('create-server-backup', async() => {
+    const currentPath = store.get('lastServerPath')
+    const gameType = identifyServer(currentPath)
+    if (gameType === null) {
+     return {success: false, message: "Unitetified Game Type"}
+    }
+    const saveFiles = {
+      "Minecraft": "world",
+      "Ark": "ShooterGame/Saved",
+      "Rust": "server"
+    };
+    const targetFolder = saveFiles[gameType];
+    const fullSourcePath = path.join(currentPath, targetFolder)
+    if (!fs.existsSync(fullSourcePath)) {
+      return {success: false, message: "Save Files Not FoundA"}
+    }
+    const backupdir = path.join(currentPath, 'Dashboard-Backups');
+    if (!fs.existsSync(backupdir)) {
+      fs.mkdir(backupdir, {recursive: true});
+    }
+    const timestamp = new.Date().toISOString().replace(/[:.]/g, '-');
+    const des
+  })
   ipcMain.handle('get-stats', async () => {
       let statusState = "OFFLINE"
       let currentLatency = null;

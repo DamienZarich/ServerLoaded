@@ -294,9 +294,14 @@ setInterval(async () => {
             statusText.style.color = "#48BB78";
         } else {
             statusText.innerText = `ERROR: ${result.message}`;
-            statusText.style.color = #F56565;
+            statusText.style.color = "#F56565";
         }
     } catch(error) {
         statusText.innerText = "IPC Connection Faild"
+        statusText.style.color = "#F56565"
+    } finally {
+        setTimeout(() => {
+            backupbtn.disabled = false
+        }, 3000);
     }
   })
