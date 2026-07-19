@@ -32,6 +32,7 @@ let highestPing = 0;
 let averagePing = 0;
 let pingSum = 0;
 let pingCount = 0;
+let isServerVerified = false;
 
 function checkSelection () {
 if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
@@ -72,6 +73,7 @@ const IPAddressValue = serverPath ? serverPath.value : "";
 const response = await window.electronAPI.StartServer(selectedPath, IPAddressValue);
 if (!response.success) {
     clearInterval(startCounter)
+    isServerVerified = false
     if (response.reason === "network") {
         errorText.innerText = "incorrect IP address or server offline";
         errorText.style.fontSize = "12px"
@@ -94,6 +96,7 @@ if (!response.success) {
 }
 if (response.success) {
     logEvent("Server Found");
+    isServerVerified = true;
     await window.electronAPI.saveServerAddress(selectedPath, IPAddressValue);
     choose.innerText = "SELECT-FILES";
     choose.disabled = true;
@@ -105,6 +108,7 @@ if (response.success) {
 }
 async function handleReset () {
 logEvent("Resetting Server...")
+isServerVerified = false
 choose.disabled = true;
 reset.disabled = true
 reset.innerText = "RESETTING"
@@ -156,6 +160,10 @@ function configFiles() {
         logEvent("Please Select a Server First");
         return;
     }
+    if (!isServerVerified) {
+        logEvent("Error: Server IP Must Be Verified First");
+        return;
+    }
     await window.electronAPI.configFiles(selectedPath);
     })
 }
@@ -165,6 +173,10 @@ function serverFiles() {
         const selectedPath = serverSelect.value;
         if (!selectedPath || selectedPath.trim() === "") {
             logEvent("Please Select a Server First");
+            return;
+        }
+        if (!isServerVerified) {
+            logEvent("Error: Server IP Must Be Verified First");
             return;
         }
         await window.electronAPI.serverFiles(selectedPath);

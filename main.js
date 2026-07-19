@@ -154,9 +154,9 @@ function createWindow() {
     }
     const backupdir = path.join(currentPath, 'Dashboard-Backups');
     if (!fs.existsSync(backupdir)) {
-      fs.mkdir(backupdir, {recursive: true});
+      fs.mkdirSync(backupdir, {recursive: true});
     }
-    const timestamp = new.Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const destinationPath = path.join(backupdir, `${gameType}-Backup-${timestamp}`)
 
     try {
@@ -164,7 +164,7 @@ function createWindow() {
       return {success: true, message: "Backup Has Been Created"}
     } catch (error) {
       console.error("Backup Failded:", error);
-      return {success: false, message: "Failedl To Create Backup"}
+      return {success: false, message: "Failed To Create Backup"}
     }
   })
   ipcMain.handle('get-stats', async () => {

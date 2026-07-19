@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveServerAddress: (folderPath, ipAddress) => ipcRenderer.invoke('save-server-address', folderPath, ipAddress),
     getIpForPath: (folderPath) => ipcRenderer.invoke('get-ip-for-path', folderPath),
     configFiles: (folderPath) => ipcRenderer.invoke('open-config-channel', folderPath),
-    serverFiles: (folderPath) => ipcRenderer.invoke('open-folder-channel', folderPath)
+    serverFiles: (folderPath) => ipcRenderer.invoke('open-folder-channel', folderPath),
+    createServerBackup: () => ipcRenderer.invoke('create-server-backup'),
 }); 
