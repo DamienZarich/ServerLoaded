@@ -170,6 +170,7 @@ function createWindow() {
   ipcMain.handle('get-stats', async () => {
       let statusState = "OFFLINE"
       let currentLatency = null;
+      let isOnline = false;
       if (serverAddress && typeof serverAddress === 'string' && serverAddress.trim() !== "") {
         statusState = "NONE";
       } else {
@@ -205,7 +206,7 @@ function createWindow() {
         usedMemoryMB: usedMemMB,
         totalMemoryMB: totalMemMB,
         uptime: uptimeString,
-        online: isOnline,
+        online: statusState,
         status: statusState,
         latency: currentLatency
       }

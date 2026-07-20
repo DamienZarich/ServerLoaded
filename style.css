@@ -243,13 +243,10 @@ h3 {
 .choose {
     margin-top: 60px;
 }
-.card button.choose:disabled {
-    background-color: #313439;
-    color: #6b6f76;
-    cursor: not-allowed;
-    border: 1px solid #1A202C;
-}
-.card button.reset:disabled {
+.card button.choose:disabled,
+.card button.reset:disabled,
+.card button.confbtn:disabled,
+.card button.servbtn:disabled {
     background-color: #313439;
     color: #6b6f76;
     cursor: not-allowed;
