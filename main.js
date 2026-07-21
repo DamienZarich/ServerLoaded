@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -6,6 +6,8 @@ const si = require('systeminformation');
 const Store = require('electron-store');
 const net = require('net');
 const { channel } = require('diagnostics_channel');
+const { GameDig } = require('gamedig');
+const { error } = require('console');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
@@ -60,7 +62,7 @@ ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
 const gameSignatures = {
   "Minecraft": "server.properties",
   "Rust": "server.cfg",
-  "Ark": "ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini"
+  "Ark": "ArkAscendedServer.exe"
 };
 function identifyServer(folderPath) {
   for (const [game, file] of Object.entries(gameSignatures)) {
@@ -76,49 +78,48 @@ function checkServerStatus(address) {
   }
   const folderPath = store.get('lastServerPath')
   const gameType = identifyServer(folderPath)
-  const gamePorts = {
-    "Minecraft": 25565,
-    "Ark": 7777,
-    "Rust": 28015
-  }
-  const ports = gamePorts[gameType] || 25565
-  return new Promise((resolve) => {
-    let socket;
-    const startTime = performance.now();
-    try {
-    socket = net.createConnection(ports, address);
-    socket.setTimeout(1000);
-  } catch (err) {
-    resolve({online: false, latency: null});
-    return;
-    }
-    socket.on('connect', () => {
-    const latency = Math.round(performance.now() - startTime);
-    resolve({online: true, latency: latency});
-    socket.destroy();
-  });
-socket.on('timeout', () => {
-    resolve({online: false, latency: null});
-    socket.destroy();
-  });
-
-socket.on('error', () => {
-    resolve({online: false, latency: null});
-    socket.destroy();
-  });
+  const gameDigMap = {
+    "Minecraft": "minecraft",
+    "Ark": "arksa",
+    "Rust": "rust"
+  };
+ const gameId = gameDigMap[gameType];
+ if (!gameId) {
+  return Promise.resolve({online: false, latency: null, players: 0, maxplayers: 0})
+ };
+ return GameDig.query({
+  type: gameId,
+  host: address,
+  socketTimeout: 2000
+ })
+ .then((state) => {
+  return {
+    online: true,
+    latency: state.ping,
+    players: state.players ? state.players.length : 0,
+    maxplayers: state.maxplayers || 0
+  };
+ })
+ .catch(() => {
+  return {online: false, latency: null, players: 0, maxplayers: 0};
  });
 }
 ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
+  try {
   const serverFound = identifyServer(serverPath) 
-  serverAddress = incomingAddress
   if (!serverFound) {
     return {success: false, reason: "files", message: "Could Not Locate Files"}
   }
-  const statusReady = await checkServerStatus(serverAddress);
+  const statusReady = await checkServerStatus(incomingAddress);
   if (!statusReady.online) {
     return {success: false, reason: "network", message: "Server IP is incorrect or unreachable"};
   }
+  serverAddress = incomingAddress;
   return {success: true};
+} catch (error) {
+  console.error("Failed To Start Server Check:", error);
+  return {success: false, reason: "error", message: "Internal Server Check Error"}
+}
 });
 ipcMain.handle('ResetServer', async (event, serverPath) => {
  serverAddress = null
@@ -126,9 +127,16 @@ ipcMain.handle('ResetServer', async (event, serverPath) => {
  return {success: true};
 });
 function createWindow() {
+  const iconPath = path.join(app.getAppPath(), 'server-manager-icon.png');
+  const icon = nativeImage.createFromPath(iconPath);
+  
+  console.log("Icon empty?:", icon.isEmpty());
+  
   const win = new BrowserWindow({
     width: 1000,
     height: 800,
+    frame: false,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false
@@ -168,22 +176,28 @@ function createWindow() {
     }
   })
   ipcMain.handle('get-stats', async () => {
-      let statusState = "OFFLINE"
+      let statusState = "404"
       let currentLatency = null;
       let isOnline = false;
+      let playerCount = "0/0"
       if (serverAddress && typeof serverAddress === 'string' && serverAddress.trim() !== "") {
-        statusState = "NONE";
-      } else {
         const statusReady = await checkServerStatus(serverAddress);
         isOnline = statusReady.online;
-        currentLatency = statusReady.latency;
+        currentLatency = statusReady.latency
 
-        if (isOnline && !serverStartTime) {
-          serverStartTime = Date.now();
-        }
-        else if (!isOnline) {
+        if (isOnline) {
+          statusState = "ONLINE";
+          playerCount = `${statusReady.players}/${statusReady.maxplayers}`;
+          if (!serverStartTime) {
+            serverStartTime = Date.now();
+          }
+        } else {
+          statusState = "OFFLINE"
           serverStartTime = null;
         }
+      } else {
+        statusState = "404"
+        serverStartTime = null;
       }
       
       const cpu = await si.currentLoad ();
@@ -208,7 +222,13 @@ function createWindow() {
         uptime: uptimeString,
         online: statusState,
         status: statusState,
-        latency: currentLatency
+        latency: currentLatency,
+        players: playerCount
       }
     });
-app.whenReady().then(createWindow); 
+app.whenReady().then(() => {
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.yourname.servermanager');
+  }
+  createWindow();
+}); 

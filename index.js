@@ -29,10 +29,12 @@ resetButton.addEventListener("click", handleReset);
 chooseButton.addEventListener("click", StartServer);
 serverPath.addEventListener("input", checkSelection);
 serverSelect.addEventListener("change", handleServerChange);
+configbtn.addEventListener("click", handleConfigClick);
+serverbtn.addEventListener("click", handleServerFilesClick);
 
 let upTimeInt;
 let startTime;
-let serverPing = 0;
+let currentServerPing = 0;
 let highestPing = 0;
 let averagePing = 0;
 let pingSum = 0;
@@ -42,6 +44,12 @@ let isCoolingDown = false;
 let isStartCoolingDown = false;
 
 function checkSelection() {
+    if (isStartCoolingDown || isCoolingDown) {
+        choose.disabled = true;
+        reset.disabled = true;
+        return;
+    }
+
   if (serverSelect.value.trim() === "" || serverPath.value.trim() === "") {
     choose.disabled = true;
     reset.disabled = true;
@@ -66,10 +74,9 @@ async function StartServer() {
   if (isStartCoolingDown) return;
   isStartCoolingDown = true;
   choose.disabled = true;
+  backupbtn.disabled = true;
   logEvent("Fetching Server...");
-  reset.disabled = true;
-  choose.disabled = true;
-  choose.innerText = "RUNNING...";
+  choose.innerText = "RUNNING..."
   let dotCount = 0;
   let startCounter = setInterval(() => {
     dotCount++;
@@ -87,13 +94,16 @@ async function StartServer() {
   if (!response.success) {
     clearInterval(startCounter);
     isServerVerified = false;
+    statusText.innerText = "Server Not Verified"
     if (response.reason === "network") {
       errorText.innerText = "incorrect IP address or server offline";
       errorText.style.fontSize = "12px";
       logEvent("Error: Connection Faild (Check IP)");
+      backupbtn.disabled = false;
     } else {
       errorText.innerText = "Could Not Locate Server Files";
       logEvent("Error: Path Verification Failed");
+      backupbtn.disabled = true;
     }
     errorText.style.visibility = "visible";
 
@@ -102,14 +112,16 @@ async function StartServer() {
       errorText.innerText = "Not a Server Address";
     }, 3000);
     choose.innerText = "SELECT-SERVER";
-    choose.disabled = false;
-    reset.disabled = false;
+    choose.disabled = true;
+    reset.disabled = true;
     serverbtn.disabled = true;
     configbtn.disabled = true;
+    backupbtn.disabled = true;
     addServer.disabled = false;
     setTimeout(() => {
         isStartCoolingDown = false;
-        checkSelection()
+        addServer.disabled = false;
+        checkSelection();
     }, 3000);
     return;
   }
@@ -134,6 +146,7 @@ async function StartServer() {
 async function handleReset() {
   logEvent("Resetting Server...");
   isServerVerified = false;
+  isStartCoolingDown = true;
   choose.disabled = true;
   reset.disabled = true;
   reset.innerText = "RESETTING";
@@ -151,6 +164,7 @@ async function handleReset() {
   await window.electronAPI.ResetServer();
   serverSelect.value = "";
   addServer.disabled = false;
+  backupbtn.disabled = true;
   logEvent("Server Reset");
   clearInterval(dotCounter);
   serverPath.value = "";
@@ -273,18 +287,24 @@ setInterval(async () => {
   const memDis = document.getElementById("mem-value");
   const megbyt = document.getElementById("mb");
   const uptimeDis = document.getElementById("uptime-val");
+  const playerCountDis = document.getElementById("player-count")
 
   if (stats && typeof stats.online !== "undefined") {
     updateStatus(stats.online);
+    if (playerCountDis && stats.players) {
+      playerCountDis.innerText = stats.players;
+    }
     if (stats.online === "ONLINE") {
         isServerVerified = true;
         choose.innerText = "SELECT-FILES"
         choose.disabled = true;
+        if (!isCoolingDown) {
         reset.disabled = false;
         serverbtn.disabled = false;
         configbtn.disabled = false;
         backupbtn.disabled = false;
         addServer.disabled = true;
+        }
 
         if (statusText.innerText === "" || statusText.innerText === "IPC Connection Failed") {
             statusText.innerText = "Ready to Backup";
@@ -292,7 +312,7 @@ setInterval(async () => {
         }
     } else if (stats.online === "OFFLINE" || stats.online === "404") {
         if (choose.innerText === "SELECT-FILES") {
-            choose.innerText === "SELECT-FILES";
+            choose.innerText = "SELECT-SERVER";
             checkSelection();
             serverbtn.disabled = true;
             configbtn.disabled = true;
@@ -356,8 +376,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     serverPath.value = savedIP || "";
   }
   checkSelection();
-  handleConfigClick();
-  handleServerFilesClick();
 });
 document.getElementById("server-backup").addEventListener("click", async () => {
   const backupbtn = document.getElementById("server-backup");
@@ -366,7 +384,7 @@ document.getElementById("server-backup").addEventListener("click", async () => {
   statusText.style.color = "#ecc94b";
 
   try {
-    const result = await window.electronAPI.invoke("create-server-backup");
+    const result = await window.electronAPI.createBackup();
 
     if (result.success) {
       statusText.innerText = result.message;

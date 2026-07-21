@@ -246,7 +246,8 @@ h3 {
 .card button.choose:disabled,
 .card button.reset:disabled,
 .card button.confbtn:disabled,
-.card button.servbtn:disabled {
+.card button.servbtn:disabled,
+.card button#server-backup:disabled {
     background-color: #313439;
     color: #6b6f76;
     cursor: not-allowed;
