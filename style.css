@@ -272,3 +272,41 @@ small {
     color: #718096;
     display: block;
 }
+#titlebar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 32px;
+    background-color: #121212;
+    color: #ffffff;
+    user-select: none;
+}
+.titlebar-drag-region {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    height: 100%;
+    -webkit-app-region: drag;
+}
+.titlebar-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+.titlebar-controls button {
+    background: transparent;
+    border: none;
+    color: #888;
+    width: 40px;
+    height: 100%;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.titlebar-controls button:hover {
+    background: #222;
+    color: #fff;
+}
+#close-btn:hover {
+    background: #;
+}
