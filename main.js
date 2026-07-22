@@ -12,6 +12,22 @@ const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
 
+function safePath(basePath, ...segments) {
+  const resolvedPath = path.resolve(basePath, ...segments);
+  const resolvedBase = path.resolve(basePath);
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    throw new Error("Path traversal attempt detected!");
+  }
+  return resolvedPath;
+}
+
+function isValidAddress(address) {
+  if (!address || typeof address !== 'string') return false;
+  const hostRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*$/;
+  const ipRegex = /^[0-9a-fA-F.:]+$/; 
+  const cleanAddress = address.split(':')[0];
+  return hostRegex.test(cleanAddress) || ipRegex.test(cleanAddress);
+}
 ipcMain.handle('get-saved-path', async () => {
   return store.get('lastServerPath') || "";
 });
@@ -38,24 +54,38 @@ ipcMain.handle('save-server-address', async (event, folderPath, ipAddress) => {
   return true;
 });
 ipcMain.handle('open-folder-channel', async (event, folderPath) => {
-  if (fs.existsSync(folderPath)) {
-    await shell.openPath(folderPath);
-    return {success: true}
-  } else {
-    return {success: false, message: "Folder Not Found"}
+  if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"}
+  try {
+    const cleanPath = path.resolve(folderPath);
+    if (fs.existsSync(cleanPath));
+    const stat = fs.lstatSync(cleanPath);
+    if (stat.isDirectory()) {
+      await shell.openPath(cleanPath);
+    }
   }
 })
 ipcMain.handle('open-config-channel', async (event, folderPath) => {
-  const gameType = identifyServer(folderPath)
+      if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"}
+  try {
+  const cleanFolderPath = path.resolve(folderPath);
+  const gameType = identifyServer(folderPath);
+
+  if (!gameType) return {success: false, message: "Unidentified Game Folder"}
   const configFile = gameSignatures[gameType];
-  const fullPath = path.join(folderPath, configFile);
-  if (fs.existsSync(fullPath)) {
+
+  if (configFile.endsWith('.exe')) {
+    return {success: false, message: "Cannot Open .exe File as Config"}
+  }
+  const fullPath = safePath(cleanFolderPath, configFile);
+  if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
   await shell.openPath(fullPath);
   return {success: true};
-  } else {
-    return {success: false, message: `Config file (${configFile}) not found`};
   }
-})
+  return {success: false, message: "Config File Does Not Exist"}
+} catch(err) {
+  return {success: false, message: "Security Restriction or Invald Directory"};
+}
+});
 ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
   return store.get(`ips.${folderPath}`) || ""
 });
@@ -136,12 +166,17 @@ function createWindow() {
     width: 1000,
     height: 800,
     frame: false,
+    backgroundColor: '#0d0d0d',
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false
+      nodeIntegration: false,
+      contextIsolation: true,
     }
   });
+  ipcMain.on('window-min', () => win.minimize());
+  ipcMain.on('window-max', () => win.isMaximized() ? win.unmaximize() : win.maximize());
+  ipcMain.on('window-close', () => win.close());
   win.loadFile('index.html')
 }
   ipcMain.handle('create-server-backup', async() => {

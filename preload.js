@@ -11,4 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     configFiles: (folderPath) => ipcRenderer.invoke('open-config-channel', folderPath),
     serverFiles: (folderPath) => ipcRenderer.invoke('open-folder-channel', folderPath),
     createServerBackup: () => ipcRenderer.invoke('create-server-backup'),
+    minWindow: () => ipcRenderer.send('window-min'),
+    maxWindow: () => ipcRenderer.send('window-max'),
+    closeWindow: () => ipcRenderer.send('window-close')
 }); 

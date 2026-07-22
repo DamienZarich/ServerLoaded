@@ -1,6 +1,7 @@
 {
   "name": "serverloaded",
   "version": "1.0.0",
+   "main": "main.js",
   "description": "A clean, responsive dashboard designed to provide real-time status and control for my private game server.\r This tool removes the need to manually check console windows by providing a simplified interface for server management.\r Preview",
   "homepage": "https://github.com/DamienZarich/ServerLoaded#readme",
   "bugs": {
@@ -13,13 +14,32 @@
   "license": "ISC",
   "author": "damien",
   "type": "commonjs",
-  "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dist": "electron-builder",
+    "package": "electron-packager . \"Server Loaded\" --platform=win32 --arch=x64 --out=build --overwrite --icon=server-icon.ico"
+  },
+  "build": {
+    "appId": "com.damien.serverloaded",
+    "productName": "Server Loaded",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "server-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Server Loaded"
+    }
   },
   "devDependencies": {
-    "electron": "^43.0.0"
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3"
   },
   "dependencies": {
     "electron-store": "^11.0.2",

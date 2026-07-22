@@ -280,6 +280,9 @@ small {
     background-color: #121212;
     color: #ffffff;
     user-select: none;
+    z-index: 5;
+    position: sticky;
+    top: 0;
 }
 .titlebar-drag-region {
     flex-grow: 1;
@@ -339,5 +342,8 @@ small {
     border: 2px solid #0f0f0f;
 }
 ::-webkit-scrollbar-thumb:hover {
-    back
+    background: #444444;
+}
+::-webkit-scrollbar-button {
+    display: none;
 }
