@@ -79,7 +79,25 @@ ipcMain.handle('open-folder-channel', async (event, folderPath) => {
   }
 });
 ipcMain.handle('open-config-channel', async (event, folderPath) => {
-      
+      try {
+        const currentPath = store.get('lastServerPath');
+        if (!currentPath) return {success: false, message: "Unidentified Game Folder"};
+        
+        const gameType = identifyServer(currentPath);
+        if (!gameType) return {success: false, message: "Unidentified Game Folder"};
+
+        const configFile = gameSignatures[gameType];
+        if (configFile.endsWith('.exe')) {
+          return {success: false, message: "Securtiy Block: Cant Edit .exe File"}
+        }
+
+        const fullPath = safePath(currentPath, configFile);
+
+        if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
+          const content = fs.readFileSync(fullPath, 'utf-8')
+          return {success: true, message: "Config File Does NOt Exist"}
+        }
+      }
 });
 ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
   return store.get(`ips.${folderPath}`) || ""
