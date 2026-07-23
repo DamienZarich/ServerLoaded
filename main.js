@@ -24,11 +24,14 @@ function safePath(basePath, ...segments) {
 }
 
 function isValidAddress(address) {
-  if (!address || typeof address !== 'string') return false;
-  const hostRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*$/;
-  const ipRegex = /^[0-9a-fA-F.:]+$/; 
-  const cleanAddress = address.split(':')[0];
-  return hostRegex.test(cleanAddress) || ipRegex.test(cleanAddress);
+  if (!address || typeof address !== 'string' || address.length > 253) return false;
+  let clean = address.replace(/^\[|\]$/g, '');
+  if (clean.includes(':') && !net.isIPv6(clean)) {
+    clean = clean.split(':')[0];
+  }
+  if (net.isIP(clean) !== 0) return true;
+  const domainRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*$/;
+  return domainRegex.test(clean);
 }
 ipcMain.handle('get-saved-path', async () => {
   return store.get('lastServerPath') || "";
@@ -58,9 +61,11 @@ ipcMain.handle('save-server-address', async (event, folderPath, ipAddress) => {
 ipcMain.handle('open-folder-channel', async (event, folderPath) => {
   if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"};
   try {
-    const currentPath = store.get('lastServerPath')
+    const currentPath = store.get('lastServerPath');
+
     if (!currentPath) return {success: false, message: "No Server Path Configured"}
     const cleanPath = safePath(currentPath, path.relative(currentPath, folderPath));
+
     if (fs.existsSync(cleanPath)) {
       const stat = fs.lstatSync(cleanPath);
       if (stat.isDirectory()) {
@@ -74,26 +79,7 @@ ipcMain.handle('open-folder-channel', async (event, folderPath) => {
   }
 });
 ipcMain.handle('open-config-channel', async (event, folderPath) => {
-      if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"}
-  try {
-  const cleanFolderPath = path.resolve(folderPath);
-  const gameType = identifyServer(folderPath);
-
-  if (!gameType) return {success: false, message: "Unidentified Game Folder"}
-  const configFile = gameSignatures[gameType];
-
-  if (configFile.endsWith('.exe')) {
-    return {success: false, message: "Cannot Open .exe File as Config"}
-  }
-  const fullPath = safePath(cleanFolderPath, configFile);
-  if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
-  await shell.openPath(fullPath);
-  return {success: true};
-  }
-  return {success: false, message: "Config File Does Not Exist"}
-} catch(err) {
-  return {success: false, message: "Security Restriction or Invald Directory"};
-}
+      
 });
 ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
   return store.get(`ips.${folderPath}`) || ""
@@ -153,32 +139,23 @@ function checkServerStatus(address) {
 }
 ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   try {
-    if (!isValidAddress(Address)) {
-     if (!address || typeof address !== 'string') return false;
-     let clean = address.replace(/^\[|\]$/g, '');
-
-     if (clean.includes(':') && !net.isIPv6(clean)) {
-      clean = clean.split(':')[0]
-     }
-     if (net.isIP(clean)) return true;
-
-     const hostRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*$/;
-     return hostRegex.test(clean)
+    if (!isValidAddress(incomingAddress)) {
+      return { success: false, message: "Invalid Format", reason: "Security" };
     }
-  const serverFound = identifyServer(serverPath) 
-  if (!serverFound) {
-    return {success: false, reason: "files", message: "Could Not Locate Files"}
+    const serverFound = identifyServer(serverPath);
+    if (!serverFound) {
+      return { success: false, reason: "files", message: "Could Not Locate Files" };
+    }
+    const statusReady = await checkServerStatus(incomingAddress);
+    if (!statusReady.online) {
+      return { success: false, reason: "network", message: "Server IP is incorrect or unreachable" };
+    }
+    serverAddress = incomingAddress;
+    return { success: true };
+  } catch (error) {
+    console.error("Failed To Start Server Check:", error);
+    return { success: false, reason: "error", message: "Internal Server Check Error" };
   }
-  const statusReady = await checkServerStatus(incomingAddress);
-  if (!statusReady.online) {
-    return {success: false, reason: "network", message: "Server IP is incorrect or unreachable"};
-  }
-  serverAddress = incomingAddress;
-  return {success: true};
-} catch (error) {
-  console.error("Failed To Start Server Check:", error);
-  return {success: false, reason: "error", message: "Internal Server Check Error"}
-}
 });
 ipcMain.handle('ResetServer', async (event, serverPath) => {
  serverAddress = null
