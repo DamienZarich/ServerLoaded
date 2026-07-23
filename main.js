@@ -8,14 +8,16 @@ const net = require('net');
 const { channel } = require('diagnostics_channel');
 const { GameDig } = require('gamedig');
 const { error } = require('console');
+const { uptime } = require('process');
 const store = new Store.default();
 let serverAddress = null;
 let serverStartTime = null;
 
 function safePath(basePath, ...segments) {
-  const resolvedPath = path.resolve(basePath, ...segments);
   const resolvedBase = path.resolve(basePath);
-  if (!resolvedPath.startsWith(resolvedBase)) {
+  const resolvedPath = path.resolve(resolvedBase, ...segments);
+  const baseWithSep = resolvedBase.endsWith(path.sep) ? resolvedBase : resolvedBase + path.sep;
+  if (!resolvedPath.startsWith(baseWithSep) && resolvedPath !== resolvedBase) {
     throw new Error("Path traversal attempt detected!");
   }
   return resolvedPath;
@@ -54,16 +56,23 @@ ipcMain.handle('save-server-address', async (event, folderPath, ipAddress) => {
   return true;
 });
 ipcMain.handle('open-folder-channel', async (event, folderPath) => {
-  if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"}
+  if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"};
   try {
-    const cleanPath = path.resolve(folderPath);
-    if (fs.existsSync(cleanPath));
-    const stat = fs.lstatSync(cleanPath);
-    if (stat.isDirectory()) {
-      await shell.openPath(cleanPath);
+    const currentPath = store.get('lastServerPath')
+    if (!currentPath) return {success: false, message: "No Server Path Configured"}
+    const cleanPath = safePath(currentPath, path.relative(currentPath, folderPath));
+    if (fs.existsSync(cleanPath)) {
+      const stat = fs.lstatSync(cleanPath);
+      if (stat.isDirectory()) {
+        await shell.openPath(cleanPath);
+        return {success: true};
+      }
     }
+    return {success: false, message: "Folder Not Found"};
+  } catch (e) {
+    return {success: false, message: "Access Denied"};
   }
-})
+});
 ipcMain.handle('open-config-channel', async (event, folderPath) => {
       if (!folderPath || typeof folderPath !== 'string') return {success: false, message: "Invalid Path"}
   try {
@@ -95,22 +104,30 @@ const gameSignatures = {
   "Ark": "ArkAscendedServer.exe"
 };
 function identifyServer(folderPath) {
+  if (!folderPath || typeof folderPath !== 'string') return null;
+  try {
   for (const [game, file] of Object.entries(gameSignatures)) {
-    if (fs.existsSync(path.join(folderPath, file))) {
+    if (fs.existsSync(safePath(folderPath, file))) {
       return game;
     }
   }
+} catch(e) {
   return null;
+}
+return null;
 }
 function checkServerStatus(address) {
   if (!address || address.trim() === "") {
     return Promise.resolve({online: false, latency: null});
   }
-  const folderPath = store.get('lastServerPath')
+  const folderPath = store.get('lastServerPath');
+  if (!folderPath) {
+    return Promise.resolve({online: false, latency: null, players: 0, maxplayers: 0});
+  }
   const gameType = identifyServer(folderPath)
   const gameDigMap = {
     "Minecraft": "minecraft",
-    "Ark": "arksa",
+    "Ark": "asa",
     "Rust": "rust"
   };
  const gameId = gameDigMap[gameType];
@@ -136,6 +153,18 @@ function checkServerStatus(address) {
 }
 ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
   try {
+    if (!isValidAddress(Address)) {
+     if (!address || typeof address !== 'string') return false;
+     let clean = address.replace(/^\[|\]$/g, '');
+
+     if (clean.includes(':') && !net.isIPv6(clean)) {
+      clean = clean.split(':')[0]
+     }
+     if (net.isIP(clean)) return true;
+
+     const hostRegex = /^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*$/;
+     return hostRegex.test(clean)
+    }
   const serverFound = identifyServer(serverPath) 
   if (!serverFound) {
     return {success: false, reason: "files", message: "Could Not Locate Files"}
@@ -181,7 +210,10 @@ function createWindow() {
 }
   ipcMain.handle('create-server-backup', async() => {
     const currentPath = store.get('lastServerPath')
-    const gameType = identifyServer(currentPath)
+    if (!currentPath || typeof currentPath !== 'string') return {success: false, message: ""}
+    try {
+    const cleanCurrentPath = path.resolve(currentPath);
+    const gameType = identifyServer(currentPath);
     if (gameType === null) {
      return {success: false, message: "Unitetified Game Type"}
     }
@@ -191,18 +223,18 @@ function createWindow() {
       "Rust": "server"
     };
     const targetFolder = saveFiles[gameType];
-    const fullSourcePath = path.join(currentPath, targetFolder)
+
+    const fullSourcePath = safePath(cleanCurrentPath, targetFolder);
+    const backupdir = safePath(cleanCurrentPath, 'Dashboard-Backups');
     if (!fs.existsSync(fullSourcePath)) {
-      return {success: false, message: "Save Files Not FoundA"}
+      return {success: false, message: "Save Files Not Found"}
     }
-    const backupdir = path.join(currentPath, 'Dashboard-Backups');
     if (!fs.existsSync(backupdir)) {
       fs.mkdirSync(backupdir, {recursive: true});
     }
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const destinationPath = path.join(backupdir, `${gameType}-Backup-${timestamp}`)
+    const destinationPath = safePath(backupdir, `${gameType}-Backup-${timestamp}`)
 
-    try {
       fs.cpSync(fullSourcePath, destinationPath, {recursive: true})
       return {success: true, message: "Backup Has Been Created"}
     } catch (error) {
@@ -215,6 +247,7 @@ function createWindow() {
       let currentLatency = null;
       let isOnline = false;
       let playerCount = "0/0"
+
       if (serverAddress && typeof serverAddress === 'string' && serverAddress.trim() !== "") {
         const statusReady = await checkServerStatus(serverAddress);
         isOnline = statusReady.online;
@@ -234,7 +267,7 @@ function createWindow() {
         statusState = "404"
         serverStartTime = null;
       }
-      
+      try {
       const cpu = await si.currentLoad ();
       const mem = await si.mem ();
       const memPercent = Math.round((mem.active / mem.total) * 100);
@@ -259,7 +292,10 @@ function createWindow() {
         status: statusState,
         latency: currentLatency,
         players: playerCount
-      }
+      };
+    } catch (error) {
+      return { cpu: "0%", memory: "0%", usedMemoryMB: 0, totalMemoryMB: 0, uptime: "00:00:00", online: "OFFLINE", status: "OFFLINE", latency: null, players: "0/0" };
+    }
     });
 app.whenReady().then(() => {
   if (process.platform === 'win32') {
