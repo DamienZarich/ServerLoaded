@@ -10,9 +10,13 @@ const { GameDig } = require('gamedig');
 const { error } = require('console');
 const { uptime } = require('process');
 const store = new Store.default();
+let mainWindow = null;
 let serverAddress = null;
 let serverStartTime = null;
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Uhandled Rejection at:', promise, 'reason', reason);
+});
 function safePath(basePath, ...segments) {
   const resolvedBase = path.resolve(basePath);
   const resolvedPath = path.resolve(resolvedBase, ...segments);
@@ -78,26 +82,29 @@ ipcMain.handle('open-folder-channel', async (event, folderPath) => {
     return {success: false, message: "Access Denied"};
   }
 });
-ipcMain.handle('open-config-channel', async (event, folderPath) => {
-      try {
-        const currentPath = store.get('lastServerPath');
-        if (!currentPath) return {success: false, message: "Unidentified Game Folder"};
-        
-        const gameType = identifyServer(currentPath);
-        if (!gameType) return {success: false, message: "Unidentified Game Folder"};
+ipcMain.handle('open-config-channel', async () => {
+  try {
+    const currentPath = store.get('lastServerPath');
+    if (!currentPath) return { success: false, message: "No Server Path Configured" };
 
-        const configFile = gameSignatures[gameType];
-        if (configFile.endsWith('.exe')) {
-          return {success: false, message: "Securtiy Block: Cant Edit .exe File"}
-        }
+    const gameType = identifyServer(currentPath);
+    if (!gameType) return { success: false, message: "Unidentified Game Folder" };
 
-        const fullPath = safePath(currentPath, configFile);
+    const configFile = gameSignatures[gameType];
+    if (configFile.endsWith('.exe')) {
+      return { success: false, message: "Security Block: Cannot edit executable files as config" };
+    }
 
-        if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
-          const content = fs.readFileSync(fullPath, 'utf-8')
-          return {success: true, message: "Config File Does NOt Exist"}
-        }
-      }
+    const fullPath = safePath(currentPath, configFile);
+
+    if (fs.existsSync(fullPath) && fs.lstatSync(fullPath).isFile()) {
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      return { success: true, data: content, fileName: configFile };
+    }
+    return { success: false, message: "Config file does not exist" };
+  } catch (err) {
+    return { success: false, message: "Security restriction or invalid directory" };
+  }
 });
 ipcMain.handle('get-ip-for-path', async (event, folderPath) => {
   return store.get(`ips.${folderPath}`) || ""
@@ -138,6 +145,13 @@ function checkServerStatus(address) {
  if (!gameId) {
   return Promise.resolve({online: false, latency: null, players: 0, maxplayers: 0})
  };
+ let host = address;
+ let port;
+ if (address.includes(':') && !net.isIPv6(address)); {
+  const parts = address.split(':');
+  host = parts[0]
+ }
+
  return GameDig.query({
   type: gameId,
   host: address,
@@ -156,24 +170,51 @@ function checkServerStatus(address) {
  });
 }
 ipcMain.handle('start-server', async (event, serverPath, incomingAddress) => {
-  try {
-    if (!isValidAddress(incomingAddress)) {
-      return { success: false, message: "Invalid Format", reason: "Security" };
-    }
-    const serverFound = identifyServer(serverPath);
-    if (!serverFound) {
-      return { success: false, reason: "files", message: "Could Not Locate Files" };
-    }
-    const statusReady = await checkServerStatus(incomingAddress);
-    if (!statusReady.online) {
-      return { success: false, reason: "network", message: "Server IP is incorrect or unreachable" };
-    }
-    serverAddress = incomingAddress;
-    return { success: true };
-  } catch (error) {
-    console.error("Failed To Start Server Check:", error);
-    return { success: false, reason: "error", message: "Internal Server Check Error" };
+  async function checkServerStatus(address) {
+  if (!address || address.trim() === "") {
+    return { online: false, latency: null, players: 0, maxplayers: 0 };
   }
+  const folderPath = store.get('lastServerPath');
+  if (!folderPath) {
+    return { online: false, latency: null, players: 0, maxplayers: 0 };
+  }
+  const gameType = identifyServer(folderPath);
+  const gameDigMap = {
+    "Minecraft": "minecraft",
+    "Ark": "asa",
+    "Rust": "rust"
+  };
+  const gameId = gameDigMap[gameType];
+  if (!gameId) {
+    return { online: false, latency: null, players: 0, maxplayers: 0 };
+  }
+  let host = address;
+  let port;
+  if (address.includes(':') && !net.isIPv6(address)) {
+    const parts = address.split(':');
+    host = parts[0];
+    port = parseInt(parts[1], 10);
+  }
+  try {
+    const queryOptions = {
+      type: gameId,
+      host: host,
+      socketTimeout: 2000
+    };
+    if (port && !isNaN(port)) {
+      queryOptions.port = port;
+    }
+    const state = await GameDig.query(queryOptions);
+    return {
+      online: true,
+      latency: state.ping,
+      players: state.players ? state.players.length : 0,
+      maxplayers: state.maxplayers || 0
+    };
+  } catch (err) {
+    return { online: false, latency: null, players: 0, maxplayers: 0 };
+  }
+}
 });
 ipcMain.handle('ResetServer', async (event, serverPath) => {
  serverAddress = null
@@ -186,7 +227,7 @@ function createWindow() {
   
   console.log("Icon empty?:", icon.isEmpty());
   
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1000,
     height: 800,
     frame: false,
@@ -198,11 +239,23 @@ function createWindow() {
       contextIsolation: true,
     }
   });
-  ipcMain.on('window-min', () => win.minimize());
-  ipcMain.on('window-max', () => win.isMaximized() ? win.unmaximize() : win.maximize());
-  ipcMain.on('window-close', () => win.close());
-  win.loadFile('index.html')
+  mainWindow.loadFile('index.html');
 }
+ipcMain.on('window-min', () => {
+  if (mainWindow) mainWindow.minimize();
+});
+ipcMain.on('window-max', () => {
+  if (mainWindow) {
+    if(mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
+});
+ipcMain.on('window-close', () => {
+  if (mainWindow) mainWindow.close();
+});
   ipcMain.handle('create-server-backup', async() => {
     const currentPath = store.get('lastServerPath')
     if (!currentPath || typeof currentPath !== 'string') return {success: false, message: ""}

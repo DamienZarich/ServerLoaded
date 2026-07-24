@@ -2,6 +2,8 @@ body {
     background-color: #121214;
     color: #E2E8F0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 h1, h2, h3 {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,23 +13,36 @@ h1, h2, h3 {
     margin-bottom: 20px;
 }
 .cards {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
     padding: 20px;
-    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (min-width: 1200px) {
+    .cards {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .cards > .card:nth-child(5) {
+        grid-column: 2;
+    }
+    .cards > .card:nth-child(6) {
+        grid-column: 3;
+    }
 }
 .card {
-    width: 350px;
-    min-height: 400px;
-    background-color: #18181b;
-    border: 1px solid #2D3748;
-    border-radius: 2px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
+  width: 100%;
+  min-height: 380px;
+  background-color: #18181b;
+  border: 1px solid #2D3748;
+  border-radius: 2px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+  box-sizing: border-box;
 }
 .card button {
     width: 100%;
@@ -64,15 +79,10 @@ h1, h2, h3 {
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
 }
-.status-404 { 
-    --pulse-color: #4A5568;
-}
-.status-online { 
-    --pulse-color: #48BB78; 
-}
-.status-offline { 
-    --pulse-color: #F56565; 
-}
+.status-404 { --pulse-color: #4A5568; }
+.status-online { --pulse-color: #48BB78; }
+.status-offline { --pulse-color: #F56565; }
+
 @keyframes pulse {
     0% {
         scale: 1;
@@ -90,105 +100,92 @@ h1, h2, h3 {
         box-shadow: 0 0 0 0px rgba(255, 255, 255, 0);
     }
 }
-@media (max-width: 1200px) {
-    .cards {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-@media (max-width: 600px) {
-    .cards {
-        grid-template-columns: 1fr;
-    }
-}
 .telemetry-card { 
-    padding: 20px; 
-    display: block; 
-    flex-direction: column; 
-    gap: 20px; 
-    position: relative;
-    padding-bottom: 100px;
-    align-items: flex-start;
-    margin: 20px auto;
-    box-sizing: border-box;
     width: calc(100% - 40px);
-    flex: none;
+    margin: 0 20px 20px 20px;
+    min-height: auto;
+    align-items: stretch !important;
+    text-align: left;
+    gap: 12px;
+    padding: 20px 24px;
 }
 .telemetry-group { 
     width: 100%;
-    position: relative;
-    flex: 1 1 100%;
-    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.telemetry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+}
+.telemetry-value {
+    font-family: monospace;
+    font-size: 14px;
+}
+.memory-details {
+    font-size: 12px;
+    color: #A0AEC0;
+    margin-top: 2px;
 }
 .progress-bar {
     width: 100%;
-    height: 12px;
+    height: 14px;
     background: #121214;
     border: 1px solid #2D3748; 
-    margin-top: 5px;
     position: relative;
     overflow: hidden;
 }
 .back-bar-cpu, .back-bar-mem {
     position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     transition: width 0.5s ease;
 }
 .back-bar-cpu {
-width: 0;
-z-index: 2;
-background: #1e242e;
+    width: 0;
+    z-index: 2;
+    background: #1e242e;
 }
 .back-bar-mem {
-width: 0;
-z-index: 2;
-background: #1e242e;
+    width: 0;
+    z-index: 2;
+    background: #1e242e;
 }
-.high-load {
-    background: #df0b0b;
-}
-.med-load {
-    background: rgb(228, 228, 27);
-}
+
+.high-load { background: #df0b0b; }
+.med-load { background: rgb(228, 228, 27); }
+
 .keys {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    z-index: 10;
-    gap: 30px;
+    gap: 12px;
+    margin-top: 15px;
 }
 .red, .yellow, .blue {
     display: flex;
     align-items: center;
-    font-size: 16px;
-    gap: 20px;
+    font-size: 14px;
+    gap: 12px;
 }
 .color-box {
-    width: 25px;
-    height: 25px;
-    border: 2px solid rgb(116, 115, 115);
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgb(116, 115, 115);
 }
-.color-box.red{
-    background: #df0b0b;
-}
-.color-box.yellow {
-    background:  rgb(228, 228, 27);
-}
-.color-box.blue {
-    background: rgb(31, 96, 201);
-}
-h1 {
-    font-size: 20px; 
-}
-h3 { 
-    font-size: 18px; 
-}
-.quick-file button:first-of-type {
-    margin-bottom: 15px;
-}
+
+.color-box.red { background: #df0b0b; }
+.color-box.yellow { background: rgb(228, 228, 27); }
+.color-box.blue { background: rgb(31, 96, 201); }
+
+h1 { font-size: 20px; }
+h3 { font-size: 18px; }
+
+.quick-file button:first-of-type { margin-bottom: 15px; }
 .quick-file small {
     margin-top: 5px;
     margin-bottom: 15px;
@@ -200,15 +197,9 @@ h3 {
     gap: 5px;
     width: 100%;
 }
-.ping-card {
-    text-transform: uppercase;
-}
-.med-latency {
-    background: rgb(228, 228, 27);
-}
-.high-latency {
-    background: #df0b0b;
-}
+.ping-card { text-transform: uppercase; }
+.med-latency { background: rgb(228, 228, 27); }
+.high-latency { background: #df0b0b; }
 .selector {
     display: flex;
     flex-direction: row;
@@ -237,12 +228,9 @@ h3 {
     flex-direction: row;
     border-style: none;
 }
-.error {
-    visibility: hidden;
-}
-.choose {
-    margin-top: 60px;
-}
+.error { visibility: hidden; }
+.choose { margin-top: 60px; }
+
 .card button.choose:disabled,
 .card button.reset:disabled,
 .card button.confbtn:disabled,
@@ -259,11 +247,10 @@ h3 {
     height: 50px;
     background: #1e1e20;
     border-style: none;
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: row;
     color: #E2E8F0;
     text-align: center;
 }
@@ -315,7 +302,7 @@ small {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s, color 0.15s;
+    -webkit-app-region: no-drag;
 }
 .titlebar-controls button:hover {
     background: #222;
@@ -325,10 +312,7 @@ small {
     background: #e81123;
     color: #fff;
 }
-.titlebar-controls button:nth-child(2) {
-    font-size: 20px;
-    font-weight: bold;
-}
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;

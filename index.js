@@ -24,6 +24,9 @@ const serverbtn = document.querySelector(".servbtn");
 const configbtn = document.querySelector(".confbtn");
 const backupbtn = document.getElementById("server-backup");
 const statusText = document.getElementById("backup-status");
+const minBtn = document.getElementById("min-btn");
+const maxBtn = document.getElementById("max-btn");
+const closeBtn = document.getElementById("close-btn")
 
 resetButton.addEventListener("click", handleReset);
 chooseButton.addEventListener("click", StartServer);
@@ -42,6 +45,10 @@ let pingCount = 0;
 let isServerVerified = false;
 let isCoolingDown = false;
 let isStartCoolingDown = false;
+
+if (minBtn) minBtn.addEventListener("click", () => window.electronAPI.minWindow());
+if (maxBtn) maxBtn.addEventListener("click", () => window.electronAPI.maxWindow());
+if (closeBtn) closeBtn.addEventListener("click", () => window.electronAPI.closeWindow());
 
 function checkSelection() {
     if (isStartCoolingDown || isCoolingDown) {
@@ -384,7 +391,7 @@ document.getElementById("server-backup").addEventListener("click", async () => {
   statusText.style.color = "#ecc94b";
 
   try {
-    const result = await window.electronAPI.createBackup();
+    const result = await window.electronAPI.createServerBackup();
 
     if (result.success) {
       statusText.innerText = result.message;
